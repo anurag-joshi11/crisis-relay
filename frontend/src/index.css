@@ -1,0 +1,116 @@
+:root {
+  color-scheme: dark;
+  font-family: Inter, system-ui, sans-serif;
+  background: #07111f;
+  color: #f5f7fb;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top left, rgba(41, 89, 154, 0.35), transparent 35%),
+    linear-gradient(180deg, #09111d 0%, #050b14 100%);
+}
+
+button, textarea {
+  font: inherit;
+}
+
+button {
+  background: #b7d4ff;
+  border: 0;
+  color: #07111f;
+  padding: 0.65rem 0.9rem;
+  border-radius: 0.7rem;
+  font-weight: 700;
+}
+
+button:disabled {
+  opacity: 0.5;
+}
+
+.shell {
+  padding: 24px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.eyebrow, h2 {
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.header-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.live-pill {
+  color: #7dffb0;
+  font-weight: 700;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.panel, .card, .timeline, .draft-card, .modal {
+  background: rgba(9, 16, 30, 0.78);
+  border: 1px solid rgba(173, 200, 255, 0.12);
+  border-radius: 18px;
+  padding: 16px;
+  backdrop-filter: blur(14px);
+}
+
+.stack { display: grid; gap: 12px; }
+.card-top { display: flex; justify-content: space-between; gap: 12px; }
+.muted { color: rgba(235, 241, 255, 0.72); }
+.selected { outline: 2px solid #98dbff; }
+.command { margin-top: 16px; }
+.timeline-row { display: grid; gap: 12px; }
+.timeline-gap { font-size: 2rem; text-align: center; color: #98dbff; }
+.timeline-note { opacity: 0.9; }
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: grid;
+  place-items: center;
+  padding: 20px;
+}
+.modal {
+  width: min(720px, 100%);
+}
+.modal textarea {
+  width: 100%;
+  min-height: 110px;
+  border-radius: 12px;
+  border: 1px solid rgba(173, 200, 255, 0.16);
+  background: #040a13;
+  color: #f5f7fb;
+  padding: 12px;
+}
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+@media (max-width: 1100px) {
+  .dashboard-grid { grid-template-columns: 1fr; }
+  .header { flex-direction: column; align-items: flex-start; }
+}
+
