@@ -79,6 +79,14 @@ def default_context() -> ScenarioContext:
     )
 
 
+def schema_contains_key(value, key_name: str) -> bool:
+    if isinstance(value, dict):
+        return key_name in value or any(schema_contains_key(item, key_name) for item in value.values())
+    if isinstance(value, list):
+        return any(schema_contains_key(item, key_name) for item in value)
+    return False
+
+
 class GeminiSchemaTests(unittest.TestCase):
     def test_contract_sample_validates_against_pydantic(self) -> None:
         sample = json.loads((ROOT / "contracts" / "extraction_result.json").read_text())
@@ -200,6 +208,22 @@ class GeminiExtractionTests(unittest.TestCase):
         self.assertNotIn("ground_truth", prompt)
         self.assertIn("Never infer ARRIVED", prompt)
 
+    def test_generate_content_uses_response_json_schema_with_strict_schema(self) -> None:
+        schema = ExtractionResult.model_json_schema()
+        self.assertTrue(schema_contains_key(schema, "additionalProperties"))
+
+        client = FakeGeminiClient(extraction_payload())
+        service = GeminiIntelligenceService(client=client, model="test-model")
+        service.extract_report(
+            ExtractRequest(raw_text="Tanker two dispatched.", scenario_context=default_context())
+        )
+
+        config = client.models.calls[0]["config"]
+        self.assertEqual(config.response_mime_type, "application/json")
+        self.assertIsNone(config.response_schema)
+        self.assertEqual(config.response_json_schema, schema)
+        self.assertTrue(schema_contains_key(config.response_json_schema, "additionalProperties"))
+
     def test_invalid_gemini_json_fails_contract_validation(self) -> None:
         service = GeminiIntelligenceService(
             client=FakeGeminiClient({"state_events": "not-an-array"}),
@@ -211,7 +235,7 @@ class GeminiExtractionTests(unittest.TestCase):
 
 class DraftStatusTests(unittest.TestCase):
     def test_fallback_draft_is_under_25_words_and_labeled(self) -> None:
-        service = GeminiIntelligenceService(client=None, model="test-model")
+        service = GeminiIntelligenceService(client=None, model="test-model", load_env=False)
         result = service.draft_status(
             DraftStatusRequest(
                 resource_id="TANKER_2",

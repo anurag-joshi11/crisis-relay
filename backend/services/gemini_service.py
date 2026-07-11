@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+from pathlib import Path
 from typing import Any, Protocol
 
 from pydantic import ValidationError
@@ -15,7 +16,7 @@ from backend.schemas.gemini_schema import (
 )
 
 
-DEFAULT_GEMINI_MODEL = "gemini-2.5-flash"
+DEFAULT_GEMINI_MODEL = "gemini-flash-latest"
 
 
 class GeminiServiceError(RuntimeError):
@@ -79,7 +80,10 @@ class GeminiIntelligenceService:
         client: GeminiClientProtocol | None = None,
         model: str | None = None,
         api_key: str | None = None,
+        load_env: bool = True,
     ) -> None:
+        if load_env:
+            _load_dotenv()
         self.model = model or os.getenv("GEMINI_MODEL") or DEFAULT_GEMINI_MODEL
         self.client = client or self._build_client(api_key=api_key)
 
@@ -129,14 +133,19 @@ class GeminiIntelligenceService:
         return genai.Client(api_key=key)
 
     def _generate_json(self, prompt: str, *, response_schema: type[Any]) -> dict[str, Any]:
-        response = self.client.models.generate_content(
-            model=self.model,
-            contents=prompt,
-            config={
-                "response_mime_type": "application/json",
-                "response_schema": response_schema,
-            },
-        )
+        try:
+            from google.genai import types
+
+            response = self.client.models.generate_content(
+                model=self.model,
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    response_mime_type="application/json",
+                    response_json_schema=response_schema.model_json_schema(),
+                ),
+            )
+        except Exception as exc:
+            raise GeminiServiceError(str(exc)) from exc
 
         parsed = getattr(response, "parsed", None)
         if isinstance(parsed, dict):
@@ -184,3 +193,19 @@ class GeminiIntelligenceService:
         lowered = draft.lower()
         if any(word in lowered for word in deployment_words):
             raise GeminiResponseValidationError("status draft must not issue a deployment order")
+
+
+def _load_dotenv(path: str | Path = ".env") -> None:
+    env_path = Path(path)
+    if not env_path.exists():
+        return
+
+    for line in env_path.read_text().splitlines():
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#") or "=" not in stripped:
+            continue
+        key, value = stripped.split("=", 1)
+        key = key.strip()
+        value = value.strip().strip('"').strip("'")
+        if key and key not in os.environ:
+            os.environ[key] = value
