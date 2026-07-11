@@ -1,13 +1,25 @@
-export default function BlindspotCard({ blindspot, selected, onSelect }) {
+export default function BlindspotCard({ blindspot, selected, decision, onSelect }) {
+  const severityClass = blindspot.severity?.toLowerCase() || 'medium'
+  const decisionClass = decision ? `decision-${decision.status.toLowerCase()}` : ''
+  const statusLabel = decision?.status || 'OPEN'
+
   return (
-    <button className={`card blindspot-card ${selected ? 'selected' : ''}`} onClick={() => onSelect(blindspot)}>
+    <button className={`card blindspot-card severity-${severityClass} ${decisionClass} ${selected ? 'selected' : ''}`} onClick={() => onSelect(blindspot)}>
       <div className="card-top">
         <strong>{blindspot.resource_id}</strong>
-        <span>{blindspot.severity}</span>
+        <span className={`badge ${decision ? `decision-badge ${decisionClass}` : `severity-${severityClass}`}`}>{statusLabel}</span>
       </div>
-      <p>{blindspot.reason}</p>
-      <p className="muted">{blindspot.minutes_in_state} minutes in state</p>
+      <p>{decision ? decision.summary : blindspot.reason}</p>
+      {decision ? (
+        <div className="decision-card-note">
+          <span>Operation still unverified</span>
+        </div>
+      ) : (
+        <div className="urgent-metric">
+          <strong>{blindspot.minutes_in_state}</strong>
+          <span>minutes unconfirmed</span>
+        </div>
+      )}
     </button>
   )
 }
-

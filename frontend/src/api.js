@@ -3,6 +3,7 @@ import dispatchResult from './mocks/dispatch_result.json'
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 const USE_MOCKS = (import.meta.env.VITE_USE_MOCKS || 'true') === 'true'
+let mockSnapshot = structuredClone(dashboardSnapshot)
 
 async function request(path, options = {}) {
   const res = await fetch(`${API_BASE}${path}`, {
@@ -16,22 +17,64 @@ async function request(path, options = {}) {
 }
 
 export async function getDashboard() {
-  if (USE_MOCKS) return dashboardSnapshot
+  if (USE_MOCKS) return structuredClone(mockSnapshot)
   return request('/api/demo/status')
 }
 
 export async function resetDemo() {
-  if (USE_MOCKS) return dashboardSnapshot
+  if (USE_MOCKS) {
+    mockSnapshot = structuredClone(dashboardSnapshot)
+    return structuredClone(mockSnapshot)
+  }
   return request('/api/demo/reset', { method: 'POST' })
 }
 
 export async function nextEvent() {
-  if (USE_MOCKS) return dashboardSnapshot
+  if (USE_MOCKS) {
+    mockSnapshot = {
+      ...structuredClone(mockSnapshot),
+      reports: [
+        ...mockSnapshot.reports,
+        {
+          report_id: 'RPT-025',
+          scenario_time: '10:54',
+          source: 'SCOUT_4',
+          channel: 'SATELLITE_TEXT',
+          raw_text: 'No visual confirmation of Tanker Two drop completion. Smoke column still building east of Sector Four.',
+        },
+      ],
+      scenario: {
+        ...mockSnapshot.scenario,
+        current_time: '10:54',
+      },
+      blindspots: mockSnapshot.blindspots.map((blindspot) => (
+        blindspot.blindspot_id === 'BS-001'
+          ? {
+              ...blindspot,
+              minutes_in_state: 41,
+              reason: "Water-drop fulfilment remains unverified. Tanker 2's latest confirmed state is still DISPATCHED.",
+            }
+          : blindspot
+      )),
+      selected_timeline: {
+        ...mockSnapshot.selected_timeline,
+        related_active_need: {
+          scenario_time: '10:54',
+          evidence: 'No visual confirmation of Tanker Two drop completion. Smoke column still building east of Sector Four.',
+        },
+      },
+      demo: {
+        ...mockSnapshot.demo,
+        event_index: 25,
+      },
+    }
+    return structuredClone(mockSnapshot)
+  }
   return request('/api/demo/next-event', { method: 'POST' })
 }
 
 export async function draftStatusRequest(blindspotId) {
-  if (USE_MOCKS) return dispatchResult
+  if (USE_MOCKS) return { ...structuredClone(dispatchResult), blindspot_id: blindspotId }
   return request(`/api/blindspots/${blindspotId}/draft-status-request`, { method: 'POST' })
 }
 
@@ -39,10 +82,15 @@ export async function approveDispatch(dispatchId, approvedText) {
   if (USE_MOCKS) {
     return {
       ...dispatchResult,
+      dispatch_id: dispatchId,
       approved_text: approvedText,
       approval_status: 'APPROVED',
+      approval_id: 'MOCK-APR-001',
       approved_at: new Date().toISOString(),
+      payload_hash: 'mock-hash-not-submitted-on-chain',
       solana_status: 'PENDING_SYNC',
+      solana_signature: null,
+      audio_url: null,
     }
   }
   return request(`/api/dispatches/${dispatchId}/approve`, {
@@ -53,12 +101,12 @@ export async function approveDispatch(dispatchId, approvedText) {
 
 export async function rejectDispatch(dispatchId) {
   if (USE_MOCKS) {
-    return { ...dispatchResult, approval_status: 'REJECTED' }
+    return { ...structuredClone(dispatchResult), dispatch_id: dispatchId, approval_status: 'REJECTED' }
   }
   return request(`/api/dispatches/${dispatchId}/reject`, { method: 'POST' })
 }
 
 export async function getOperationTimeline(operationId) {
-  if (USE_MOCKS) return dashboardSnapshot.selected_timeline
+  if (USE_MOCKS) return { ...structuredClone(mockSnapshot.selected_timeline), operation_id: operationId }
   return request(`/api/operations/${operationId}/timeline`)
 }

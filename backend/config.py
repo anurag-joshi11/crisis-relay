@@ -14,6 +14,7 @@ GENERATED_AUDIO_DIR = ROOT_DIR / "backend" / "generated_audio"
 class Settings:
     elevenlabs_api_key: str = os.getenv("ELEVENLABS_API_KEY", "")
     elevenlabs_voice_id: str = os.getenv("ELEVENLABS_VOICE_ID", "")
+    elevenlabs_enabled: bool = os.getenv("ELEVENLABS_ENABLED", "false").lower() == "true"
     solana_rpc_url: str = os.getenv("SOLANA_RPC_URL", "https://api.devnet.solana.com")
     solana_private_key: str = os.getenv("SOLANA_PRIVATE_KEY", "")
     cors_origins: str = os.getenv("CORS_ORIGINS", "http://localhost:5173")

@@ -1,20 +1,43 @@
 export default function EvidenceTimeline({ timeline }) {
   if (!timeline) return null
+
+  const missingLabel = timeline.missing_confirmation === 'ARRIVAL_OR_FULFILMENT'
+    ? 'Missing confirmation'
+    : timeline.missing_confirmation
+
   return (
     <section className="timeline">
-      <h3>{timeline.operation_id} - Operational Timeline</h3>
-      <div className="timeline-row">
+      <div className="timeline-heading">
+        <span className="section-label">Evidence timeline</span>
+        <h3>{timeline.operation_id}</h3>
+      </div>
+      <div className="timeline-track">
         {timeline.events.map((event) => (
-          <div key={`${event.scenario_time}-${event.new_state}`} className="timeline-event">
-            <div className="timeline-time">{event.scenario_time}</div>
-            <div className="timeline-state">{event.new_state}</div>
+          <div key={`${event.scenario_time}-${event.new_state}`} className="timeline-node confirmed-node">
+            <div className="timeline-stamp">
+              <span className="timeline-time">{event.scenario_time}</span>
+              <strong>{event.new_state}</strong>
+            </div>
             <p>{event.evidence}</p>
           </div>
         ))}
-        <div className="timeline-gap">?</div>
-        <div className="timeline-note">{timeline.missing_confirmation}</div>
+        <div className="timeline-node missing-node">
+          <div className="timeline-stamp">
+            <span className="missing-mark">?</span>
+            <strong>{missingLabel}</strong>
+          </div>
+          <p>No arrival or fulfilment confirmation has been received.</p>
+        </div>
+        {timeline.related_active_need ? (
+          <div className="timeline-node active-need-node">
+            <div className="timeline-stamp">
+              <span className="timeline-time">{timeline.related_active_need.scenario_time}</span>
+              <strong>Active need repeated</strong>
+            </div>
+            <p>{timeline.related_active_need.evidence}</p>
+          </div>
+        ) : null}
       </div>
     </section>
   )
 }
-

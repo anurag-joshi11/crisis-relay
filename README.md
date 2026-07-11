@@ -24,6 +24,7 @@ Only these variables are needed for this branch:
 ```bash
 ELEVENLABS_API_KEY=
 ELEVENLABS_VOICE_ID=
+ELEVENLABS_ENABLED=false
 SOLANA_RPC_URL=https://api.devnet.solana.com
 SOLANA_PRIVATE_KEY=
 CORS_ORIGINS=http://localhost:5173
@@ -38,8 +39,7 @@ Keep `VITE_USE_MOCKS=true` while developing independently. Set it to `false` onl
 Backend:
 
 ```bash
-cd backend
-uvicorn main:app --host 0.0.0.0 --port 8000
+python -m uvicorn backend.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 Frontend:
@@ -53,6 +53,7 @@ npm run dev
 ## Integration Notes
 
 - No ElevenLabs or Solana call should happen before human approval.
+- Keep `ELEVENLABS_ENABLED=false` until the approval flow is verified.
 - ElevenLabs must synthesize only `approved_text`.
 - Solana should store only compact identifiers and a SHA-256 hash, never raw reports or sensitive text.
 - If Solana is missing credentials or the devnet wallet is unfunded, return `PENDING_SYNC` with no fake signature.
@@ -68,4 +69,3 @@ npm run dev
 - Set `VITE_API_URL` to the deployed backend URL.
 - Store `ELEVENLABS_API_KEY`, `ELEVENLABS_VOICE_ID`, `SOLANA_RPC_URL`, and `SOLANA_PRIVATE_KEY` as encrypted environment variables.
 - Set `CORS_ORIGINS` to the deployed frontend origin.
-
