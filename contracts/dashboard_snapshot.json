@@ -1,0 +1,88 @@
+{
+  "scenario": {
+    "id": "WF-001",
+    "name": "Sector 4 Ridge Wildfire",
+    "current_time": "10:44"
+  },
+  "reports": [
+    {
+      "report_id": "RPT-020",
+      "scenario_time": "10:44",
+      "source": "SCOUT_4",
+      "channel": "SATELLITE_TEXT",
+      "raw_text": "Water drop urgently required at Sector Four. Fire still advancing on the east side."
+    }
+  ],
+  "operations": [
+    {
+      "operation_id": "OP-WATER-001",
+      "operation_type": "WATER_DROP",
+      "location": "SECTOR_4",
+      "resource_id": "TANKER_2",
+      "current_state": "DISPATCHED",
+      "priority": "CRITICAL",
+      "fulfilled": false,
+      "need_still_active": true,
+      "last_state_change": "10:13"
+    },
+    {
+      "operation_id": "OP-EVAC-001",
+      "operation_type": "EVACUATION_TRANSPORT",
+      "location": "SECTOR_4",
+      "resource_id": "BUS_7",
+      "current_state": "DISPATCHED",
+      "priority": "HIGH",
+      "fulfilled": false,
+      "need_still_active": false,
+      "last_state_change": "10:09"
+    },
+    {
+      "operation_id": "OP-POWER-001",
+      "operation_type": "EMERGENCY_POWER",
+      "location": "SHELTER_ALPHA",
+      "resource_id": "GENERATOR_3",
+      "current_state": "DISPATCHED",
+      "priority": "HIGH",
+      "fulfilled": false,
+      "need_still_active": true,
+      "last_state_change": "10:31"
+    }
+  ],
+  "blindspots": [
+    {
+      "blindspot_id": "BS-001",
+      "operation_id": "OP-WATER-001",
+      "resource_id": "TANKER_2",
+      "type": "UNCONFIRMED",
+      "severity": "CRITICAL",
+      "status": "OPEN",
+      "minutes_in_state": 31,
+      "reason": "Water-drop fulfilment is not verified. Tanker 2's latest confirmed state is DISPATCHED."
+    }
+  ],
+  "selected_timeline": {
+    "operation_id": "OP-WATER-001",
+    "events": [
+      {
+        "scenario_time": "10:11",
+        "new_state": "ASSIGNED",
+        "evidence": "Tanker two assigned to the Sector Four water drop."
+      },
+      {
+        "scenario_time": "10:13",
+        "new_state": "DISPATCHED",
+        "evidence": "Tanker two dispatched. En route to Sector Four."
+      }
+    ],
+    "missing_confirmation": "ARRIVAL_OR_FULFILMENT",
+    "related_active_need": {
+      "scenario_time": "10:44",
+      "evidence": "Water drop urgently required at Sector Four."
+    }
+  },
+  "demo": {
+    "event_index": 20,
+    "total_events": 30,
+    "complete": false
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "incident_type": "WILDFIRE",
+  "severity": "CRITICAL",
+  "location": "SECTOR_4",
+  "state_events": [
+    {
+      "operation_id": "OP-WATER-001",
+      "entity_id": "TANKER_2",
+      "previous_state": null,
+      "new_state": "DISPATCHED",
+      "evidence": "Tanker two dispatched",
+      "confidence": 0.99
+    }
+  ],
+  "assumptions": [],
+  "claims": [],
+  "blockers": [],
+  "related_operation": null,
+  "need_still_active": false,
+  "transport_source": null
+}
