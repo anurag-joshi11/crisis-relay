@@ -433,6 +433,7 @@ def provider_retry_delay_seconds(message: str) -> float | None:
         r"retry[_ -]?delay['\"]?\s*[:=]\s*['\"]?([0-9]+(?:\.[0-9]+)?)s?",
         r"retry[_ -]?delay\s*\{\s*seconds:\s*([0-9]+(?:\.[0-9]+)?)",
         r"retry after\s*([0-9]+(?:\.[0-9]+)?)\s*seconds?",
+        r"retry in\s*([0-9]+(?:\.[0-9]+)?)s?",
     ]
     for pattern in patterns:
         match = re.search(pattern, message, re.IGNORECASE)

@@ -10,6 +10,7 @@ from backend.benchmark_extraction import (
     parse_args,
     run_benchmark,
     run_case,
+    retry_delay_seconds,
     score_case,
 )
 from backend.schemas.gemini_schema import ExtractionResult
@@ -612,6 +613,15 @@ class BenchmarkScoringTests(unittest.TestCase):
         self.assertEqual(case_result["api_attempt_count"], 3)
         self.assertEqual(len(case_result["retry_details"]), 2)
         self.assertEqual(sleeps, [2.0, 3.0])
+
+    def test_provider_retry_in_delay_is_preferred(self) -> None:
+        retry_delay = retry_delay_seconds(
+            RuntimeError("429 RESOURCE_EXHAUSTED. Please retry in 17.698451209s."),
+            attempt=1,
+            delay_seconds=5.0,
+        )
+
+        self.assertAlmostEqual(retry_delay, 18.698451209)
 
     def test_resume_retries_api_error_cases(self) -> None:
         benchmark_case = case(test_id="TC-ERR")
