@@ -6,7 +6,6 @@ import OperationPanel from '../components/OperationPanel'
 import UnconfirmedPanel from '../components/UnconfirmedPanel'
 import CommandIntelligence from '../components/CommandIntelligence'
 import ApprovalModal from '../components/ApprovalModal'
-import AudioPlayer from '../components/AudioPlayer'
 import WorkflowNav from '../components/WorkflowNav'
 import IncidentOverview from '../components/IncidentOverview'
 import DecisionHistoryPage from '../components/DecisionHistoryPage'
@@ -205,7 +204,6 @@ export default function Dashboard() {
           onOpenCommand={() => setActiveView('command')}
         />
       ) : null}
-      {currentDispatch ? <AudioPlayer audioUrl={currentDispatch.audio_url} /> : null}
       {currentDispatch && approvalOpen ? (
         <>
           <ApprovalModal
