@@ -65,6 +65,8 @@ State guidance:
 - "turned back", "aborted", "lost propulsion", "cannot continue" -> FAILED.
 - "complete", "finished", "connected" -> COMPLETED only when explicit.
 - "verified", "confirms", "independently confirmed" -> VERIFIED only when explicit.
+- When an operation completion is reported and a responsible resource is identifiable in the same report or scenario_context operation mapping, use the resource_id as state_event.entity_id and put the operation id in state_event.operation_id.
+- Do not use an operation id as state_event.entity_id when the mapped resource_id is known.
 
 Blocker guidance:
 - When a report states why an entity cannot proceed, enter, arrive, or complete, emit a blocker.

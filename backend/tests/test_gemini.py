@@ -254,6 +254,21 @@ class GeminiExtractionTests(unittest.TestCase):
         self.assertIn("Do not use BLOCKED as blocker.type", prompt)
         self.assertIn("Use VISIBILITY for smoke", prompt)
 
+    def test_prompt_prefers_resource_entity_for_operation_completion(self) -> None:
+        client = FakeGeminiClient(extraction_payload())
+        service = GeminiIntelligenceService(client=client, model="test-model")
+        service.extract_report(
+            ExtractRequest(
+                raw_text="Water drop complete. Tanker two returning.",
+                scenario_context=default_context(),
+            )
+        )
+
+        prompt = client.models.calls[0]["contents"]
+        self.assertIn("use the resource_id as state_event.entity_id", prompt)
+        self.assertIn("put the operation id in state_event.operation_id", prompt)
+        self.assertIn("Do not use an operation id as state_event.entity_id", prompt)
+
     def test_generate_content_uses_response_json_schema_with_strict_schema(self) -> None:
         schema = ExtractionResult.model_json_schema()
         self.assertTrue(schema_contains_key(schema, "additionalProperties"))
