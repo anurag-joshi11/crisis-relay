@@ -1,1 +1,1 @@
-
+"""CrisisRelay backend package."""

@@ -1,42 +1,59 @@
-# CrisisRelay Command Center
+# CrisisRelay
 
-Student 3 branch for the CrisisRelay command center and sponsor integrations. This branch owns the judge-visible dashboard, human approval workflow, ElevenLabs audio adapter, Solana devnet receipt adapter, and DigitalOcean deployment notes.
+CrisisRelay combines the core-engine backend with the command-center UI and sponsor integrations.
 
-This branch intentionally builds against the frozen files in `contracts/` so Student 1 and Student 2 can continue independently. It does not implement Gemini extraction, MongoDB state persistence, report ingestion, or the deterministic state engine.
+## Overview
 
-## Student 3 Scope
+- Student 1 handles Gemini extraction and report generation.
+- Student 2 handles the core-engine, state flow, and persistence.
+- Student 3 handles the command-center UI, human approval flow, ElevenLabs audio, Solana receipt submission, and deployment notes.
 
-- `frontend/src/App.jsx`
-- `frontend/src/api.js`
-- `frontend/src/index.css`
-- `frontend/src/mocks/dashboard.json`
-- `frontend/src/pages/Dashboard.jsx`
-- `frontend/src/components/*`
-- `backend/api/dispatches.py`
-- `backend/services/elevenlabs_service.py`
-- `backend/services/solana_service.py`
-- DigitalOcean deployment documentation
+## Backend
 
-## Environment
+The FastAPI app lives in `backend/`.
 
-Only these variables are needed for this branch:
+It includes:
 
-```bash
-ELEVENLABS_API_KEY=
-ELEVENLABS_VOICE_ID=
-ELEVENLABS_MODEL_ID=eleven_multilingual_v2
-ELEVENLABS_ENABLED=false
-SOLANA_ENABLED=false
-SOLANA_RPC_URL=https://api.devnet.solana.com
-SOLANA_PRIVATE_KEY=
-CORS_ORIGINS=http://localhost:5173
-VITE_API_URL=http://localhost:8000
-VITE_USE_MOCKS=true
-VITE_REAL_APPROVALS=false
+- report, operation, blindspot, demo, and intelligence routes
+- command-center dispatch routes
+- CORS handling
+- `/audio` static hosting for generated MP3 files
+
+### Runtime options
+
+For the core engine:
+
+```powershell
+$env:MONGODB_URI = "mongodb+srv://..."
+$env:MONGODB_DATABASE = "crisis_relay"
 ```
 
-Keep `VITE_USE_MOCKS=true` while developing independently. Set it to `false` only when integrating with Student 2's backend endpoints.
-Set `VITE_REAL_APPROVALS=true` only when you want the mock dashboard to call the backend approval endpoints for ElevenLabs/Solana testing.
+For the command center:
+
+```powershell
+$env:ELEVENLABS_API_KEY=
+$env:ELEVENLABS_VOICE_ID=
+$env:ELEVENLABS_MODEL_ID=eleven_multilingual_v2
+$env:ELEVENLABS_ENABLED=false
+$env:SOLANA_ENABLED=false
+$env:SOLANA_RPC_URL=https://api.devnet.solana.com
+$env:SOLANA_PRIVATE_KEY=
+$env:CORS_ORIGINS=http://localhost:5173
+```
+
+For mock UI mode:
+
+```powershell
+$env:VITE_API_URL=http://localhost:8000
+$env:VITE_USE_MOCKS=true
+$env:VITE_REAL_APPROVALS=false
+```
+
+For isolated demo/testing without MongoDB:
+
+```powershell
+$env:CRISIS_RELAY_USE_MEMORY = "true"
+```
 
 ## Local Commands
 
@@ -54,21 +71,20 @@ npm install
 npm run dev
 ```
 
-## Integration Notes
+## Command Center Notes
 
-- No ElevenLabs or Solana call should happen before human approval.
-- Keep `ELEVENLABS_ENABLED=false` until the approval flow is verified.
-- Keep `SOLANA_ENABLED=false` until devnet wallet funding is verified.
-- ElevenLabs must synthesize only `approved_text`.
-- Solana should store only compact identifiers and a SHA-256 hash, never raw reports or sensitive text.
+- No ElevenLabs or Solana call should happen before human validation.
+- Generate the voice preview first, then approve only after listening.
+- ElevenLabs should synthesize only `approved_text`.
+- Solana should store only compact identifiers and a SHA-256 hash.
 - If Solana is missing credentials or the devnet wallet is unfunded, return `PENDING_SYNC` with no fake signature.
-- If ElevenLabs fails, keep the dispatch approved and show audio unavailable.
+- If ElevenLabs fails, keep the dispatch in preview mode and show the audio error.
 
-## DigitalOcean
+## Deployment Notes
 
 - Backend source directory: `backend`
 - Backend build command: `pip install -r requirements.txt`
-- Backend run command: `uvicorn main:app --host 0.0.0.0 --port $PORT`
+- Backend run command: `uvicorn backend.main:app --host 0.0.0.0 --port $PORT`
 - Frontend source directory: `frontend`
 - Frontend build command: `npm install && npm run build`
 - Set `VITE_API_URL` to the deployed backend URL.

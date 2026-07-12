@@ -1,11 +1,14 @@
 .env
+.env.*
+!.env.example
 .venv/
 venv/
 node_modules/
 backend/generated_audio/
 frontend/dist/
+benchmark_results/
 __pycache__/
 *.pyc
+*.py[cod]
 .pytest_cache/
 .mypy_cache/
-
