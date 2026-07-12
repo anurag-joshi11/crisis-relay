@@ -1,0 +1,55 @@
+{
+  "scenario_id": "WF-001",
+  "name": "Sector 4 Ridge Wildfire",
+  "dataset_type": "SIMULATED_SYNTHETIC",
+  "disaster_type": "WILDFIRE",
+  "state_machine": [
+    "REQUESTED",
+    "ACKNOWLEDGED",
+    "ASSIGNED",
+    "DISPATCHED",
+    "ARRIVED",
+    "HOLDING",
+    "COMPLETED",
+    "VERIFIED"
+  ],
+  "terminal_states": [
+    "COMPLETED",
+    "VERIFIED"
+  ],
+  "resources": [
+    {
+      "id": "BUS_7",
+      "type": "EVACUATION_TRANSPORT"
+    },
+    {
+      "id": "TANKER_2",
+      "type": "AERIAL_WATER_UNIT"
+    },
+    {
+      "id": "GENERATOR_3",
+      "type": "EMERGENCY_POWER"
+    }
+  ],
+  "operations": [
+    {
+      "id": "OP-EVAC-001",
+      "type": "EVACUATION_TRANSPORT",
+      "resource_id": "BUS_7",
+      "location": "SECTOR_4"
+    },
+    {
+      "id": "OP-WATER-001",
+      "type": "WATER_DROP",
+      "resource_id": "TANKER_2",
+      "location": "SECTOR_4"
+    },
+    {
+      "id": "OP-POWER-001",
+      "type": "EMERGENCY_POWER",
+      "resource_id": "GENERATOR_3",
+      "location": "SHELTER_ALPHA"
+    }
+  ],
+  "warning": "Synthetic prototype data. Not validated for real emergency operations."
+}

@@ -1,0 +1,424 @@
+[
+  {
+    "report_id": "RPT-001",
+    "scenario_id": "WF-001",
+    "scenario_time": "10:02",
+    "source": "SCOUT_4",
+    "channel": "SATELLITE_TEXT",
+    "raw_text": "Fire jumped the ridge. Approaching Sector 4. Need water drop and evacuation transport immediately. Visibility zero.",
+    "ground_truth": {
+      "incident_type": "WILDFIRE",
+      "severity": "CRITICAL",
+      "location": "SECTOR_4",
+      "requests": [
+        [
+          "OP-WATER-001",
+          "REQUESTED"
+        ],
+        [
+          "OP-EVAC-001",
+          "REQUESTED"
+        ]
+      ]
+    }
+  },
+  {
+    "report_id": "RPT-002",
+    "scenario_id": "WF-001",
+    "scenario_time": "10:05",
+    "source": "TRANSPORT_COMMAND",
+    "channel": "RADIO_TRANSCRIPT",
+    "raw_text": "Sector Four evacuation transport request acknowledged. Working the assignment now.",
+    "ground_truth": {
+      "operation_id": "OP-EVAC-001",
+      "state": "ACKNOWLEDGED"
+    }
+  },
+  {
+    "report_id": "RPT-003",
+    "scenario_id": "WF-001",
+    "scenario_time": "10:07",
+    "source": "TRANSPORT_COMMAND",
+    "channel": "RADIO_TRANSCRIPT",
+    "raw_text": "Bus seven assigned to the Sector Four evacuation.",
+    "ground_truth": {
+      "entity_id": "BUS_7",
+      "operation_id": "OP-EVAC-001",
+      "state": "ASSIGNED"
+    }
+  },
+  {
+    "report_id": "RPT-004",
+    "scenario_id": "WF-001",
+    "scenario_time": "10:09",
+    "source": "TRANSPORT_COMMAND",
+    "channel": "RADIO_TRANSCRIPT",
+    "raw_text": "Bus seven rolling out from staging now, headed for Sector Four.",
+    "ground_truth": {
+      "entity_id": "BUS_7",
+      "operation_id": "OP-EVAC-001",
+      "state": "DISPATCHED"
+    }
+  },
+  {
+    "report_id": "RPT-005",
+    "scenario_id": "WF-001",
+    "scenario_time": "10:11",
+    "source": "AIR_OPERATIONS",
+    "channel": "RADIO_TRANSCRIPT",
+    "raw_text": "Tanker two assigned to the Sector Four water drop.",
+    "ground_truth": {
+      "entity_id": "TANKER_2",
+      "operation_id": "OP-WATER-001",
+      "state": "ASSIGNED"
+    }
+  },
+  {
+    "report_id": "RPT-006",
+    "scenario_id": "WF-001",
+    "scenario_time": "10:13",
+    "source": "AIR_OPERATIONS",
+    "channel": "RADIO_TRANSCRIPT",
+    "raw_text": "Tanker two dispatched. En route to Sector Four.",
+    "ground_truth": {
+      "entity_id": "TANKER_2",
+      "operation_id": "OP-WATER-001",
+      "state": "DISPATCHED"
+    }
+  },
+  {
+    "report_id": "RPT-007",
+    "scenario_id": "WF-001",
+    "scenario_time": "10:15",
+    "source": "ROAD_UNIT_8",
+    "channel": "RADIO_TRANSCRIPT",
+    "raw_text": "North access road is clear. Smoke present but still passable.",
+    "ground_truth": {
+      "claim": {
+        "subject": "NORTH_ACCESS_ROAD",
+        "attribute": "ACCESS",
+        "value": "CLEAR"
+      }
+    }
+  },
+  {
+    "report_id": "RPT-008",
+    "scenario_id": "WF-001",
+    "scenario_time": "10:17",
+    "source": "SCOUT_4",
+    "channel": "SATELLITE_TEXT",
+    "raw_text": "Smoke getting worse around four. Can't see the ridge line anymore.",
+    "ground_truth": {
+      "claim": {
+        "subject": "SECTOR_4",
+        "attribute": "VISIBILITY",
+        "value": "SEVERELY_REDUCED"
+      }
+    }
+  },
+  {
+    "report_id": "RPT-009",
+    "scenario_id": "WF-001",
+    "scenario_time": "10:19",
+    "source": "FIRE_COMMAND",
+    "channel": "RADIO_TRANSCRIPT",
+    "raw_text": "Fire is pushing east toward Sector Five.",
+    "ground_truth": {
+      "claim": {
+        "subject": "FIRE",
+        "attribute": "MOVEMENT",
+        "value": "EAST_TOWARD_SECTOR_5"
+      }
+    }
+  },
+  {
+    "report_id": "RPT-010",
+    "scenario_id": "WF-001",
+    "scenario_time": "10:21",
+    "source": "SHELTER_ALPHA",
+    "channel": "SMS",
+    "raw_text": "Sector Four residents arriving now. Receiving evacuees at Alpha.",
+    "ground_truth": {
+      "entity_id": "SECTOR_4_EVACUEES",
+      "state": "ARRIVING_AT_SHELTER",
+      "transport_source": null
+    }
+  },
+  {
+    "report_id": "RPT-011",
+    "scenario_id": "WF-001",
+    "scenario_time": "10:23",
+    "source": "LOGISTICS",
+    "channel": "RADIO_TRANSCRIPT",
+    "raw_text": "Shelter Alpha requesting backup power for medical refrigeration.",
+    "ground_truth": {
+      "operation_id": "OP-POWER-001",
+      "state": "REQUESTED"
+    }
+  },
+  {
+    "report_id": "RPT-012",
+    "scenario_id": "WF-001",
+    "scenario_time": "10:25",
+    "source": "SCOUT_4",
+    "channel": "SATELLITE_TEXT",
+    "raw_text": "Visibility below operational minimum in Sector Four. Aircraft access looks bad.",
+    "ground_truth": {
+      "claim": {
+        "subject": "AIR_ACCESS",
+        "attribute": "CONDITION",
+        "value": "DEGRADED"
+      }
+    }
+  },
+  {
+    "report_id": "RPT-013",
+    "scenario_id": "WF-001",
+    "scenario_time": "10:27",
+    "source": "LOGISTICS",
+    "channel": "RADIO_TRANSCRIPT",
+    "raw_text": "Generator three assigned to Shelter Alpha.",
+    "ground_truth": {
+      "entity_id": "GENERATOR_3",
+      "operation_id": "OP-POWER-001",
+      "state": "ASSIGNED"
+    }
+  },
+  {
+    "report_id": "RPT-014",
+    "scenario_id": "WF-001",
+    "scenario_time": "10:29",
+    "source": "SHELTER_ALPHA",
+    "channel": "SMS",
+    "raw_text": "More evacuees from Sector Four coming in by private vehicles. No transport manifest with them.",
+    "ground_truth": {
+      "entity_id": "SECTOR_4_EVACUEES",
+      "state": "ARRIVING_AT_SHELTER",
+      "transport_source": "PRIVATE_VEHICLES"
+    }
+  },
+  {
+    "report_id": "RPT-015",
+    "scenario_id": "WF-001",
+    "scenario_time": "10:31",
+    "source": "LOGISTICS",
+    "channel": "RADIO_TRANSCRIPT",
+    "raw_text": "Generator three is on the way to Alpha.",
+    "ground_truth": {
+      "entity_id": "GENERATOR_3",
+      "operation_id": "OP-POWER-001",
+      "state": "DISPATCHED"
+    }
+  },
+  {
+    "report_id": "RPT-016",
+    "scenario_id": "WF-001",
+    "scenario_time": "10:34",
+    "source": "FIRE_COMMAND",
+    "channel": "RADIO_TRANSCRIPT",
+    "raw_text": "Sector Four fire continuing east. Crews are repositioning.",
+    "ground_truth": {
+      "claim": {
+        "subject": "FIRE",
+        "attribute": "MOVEMENT",
+        "value": "EAST"
+      }
+    }
+  },
+  {
+    "report_id": "RPT-017",
+    "scenario_id": "WF-001",
+    "scenario_time": "10:36",
+    "source": "TRANSPORT_COMMAND",
+    "channel": "RADIO_TRANSCRIPT",
+    "raw_text": "Bus seven should be at Alpha by now.",
+    "ground_truth": {
+      "state": null,
+      "assumption": {
+        "entity_id": "BUS_7",
+        "assumed_state": "ARRIVED",
+        "verified": false
+      }
+    }
+  },
+  {
+    "report_id": "RPT-018",
+    "scenario_id": "WF-001",
+    "scenario_time": "10:39",
+    "source": "AIR_OBSERVER",
+    "channel": "RADIO_TRANSCRIPT",
+    "raw_text": "No visual on tanker two from the north observation point.",
+    "ground_truth": {
+      "claim": {
+        "subject": "TANKER_2",
+        "attribute": "VISUAL_CONTACT",
+        "value": "NOT_OBSERVED"
+      }
+    }
+  },
+  {
+    "report_id": "RPT-019",
+    "scenario_id": "WF-001",
+    "scenario_time": "10:41",
+    "source": "SHELTER_ALPHA",
+    "channel": "SMS",
+    "raw_text": "Medical refrigeration temperature rising. Backup power still needed.",
+    "ground_truth": {
+      "related_operation": "OP-POWER-001",
+      "need_still_active": true
+    }
+  },
+  {
+    "report_id": "RPT-020",
+    "scenario_id": "WF-001",
+    "scenario_time": "10:44",
+    "source": "SCOUT_4",
+    "channel": "SATELLITE_TEXT",
+    "raw_text": "Water drop urgently required at Sector Four. Fire still advancing on the east side.",
+    "ground_truth": {
+      "related_operation": "OP-WATER-001",
+      "need_still_active": true
+    }
+  },
+  {
+    "report_id": "RPT-021",
+    "scenario_id": "WF-001",
+    "scenario_time": "10:46",
+    "source": "SHELTER_ALPHA",
+    "channel": "RADIO_TRANSCRIPT",
+    "raw_text": "Generator three just pulled into Alpha. Crew is unloading now.",
+    "ground_truth": {
+      "entity_id": "GENERATOR_3",
+      "operation_id": "OP-POWER-001",
+      "state": "ARRIVED"
+    }
+  },
+  {
+    "report_id": "RPT-022",
+    "scenario_id": "WF-001",
+    "scenario_time": "10:48",
+    "source": "LOGISTICS",
+    "channel": "RADIO_TRANSCRIPT",
+    "raw_text": "Generator three connected. Medical refrigeration has backup power.",
+    "ground_truth": {
+      "entity_id": "GENERATOR_3",
+      "operation_id": "OP-POWER-001",
+      "state": "COMPLETED"
+    }
+  },
+  {
+    "report_id": "RPT-023",
+    "scenario_id": "WF-001",
+    "scenario_time": "10:50",
+    "source": "SHELTER_ALPHA",
+    "channel": "RADIO_TRANSCRIPT",
+    "raw_text": "Confirming backup power stable at Alpha. Generator operation verified.",
+    "ground_truth": {
+      "entity_id": "GENERATOR_3",
+      "operation_id": "OP-POWER-001",
+      "state": "VERIFIED"
+    }
+  },
+  {
+    "report_id": "RPT-024",
+    "scenario_id": "WF-001",
+    "scenario_time": "10:52",
+    "source": "TRANSPORT_COMMAND",
+    "channel": "RADIO_TRANSCRIPT",
+    "raw_text": "Those evacuees made it to Alpha, so bus seven probably got through.",
+    "ground_truth": {
+      "state": null,
+      "assumption": {
+        "entity_id": "BUS_7",
+        "assumed_state": "ARRIVED",
+        "verified": false
+      },
+      "unresolved_link": true
+    }
+  },
+  {
+    "report_id": "RPT-025",
+    "scenario_id": "WF-001",
+    "scenario_time": "10:54",
+    "source": "COMMAND",
+    "channel": "RADIO_TRANSCRIPT",
+    "raw_text": "Request status check on tanker two. Water drop remains unverified.",
+    "ground_truth": {
+      "related_operation": "OP-WATER-001",
+      "need_still_active": true
+    }
+  },
+  {
+    "report_id": "RPT-026",
+    "scenario_id": "WF-001",
+    "scenario_time": "10:56",
+    "source": "TANKER_2",
+    "channel": "RADIO_TRANSCRIPT",
+    "raw_text": "Tanker two holding south of Sector Four. Unable to enter due to zero visibility.",
+    "ground_truth": {
+      "entity_id": "TANKER_2",
+      "operation_id": "OP-WATER-001",
+      "state": "HOLDING",
+      "blocker": "VISIBILITY"
+    }
+  },
+  {
+    "report_id": "RPT-027",
+    "scenario_id": "WF-001",
+    "scenario_time": "10:58",
+    "source": "SHELTER_ALPHA",
+    "channel": "RADIO_TRANSCRIPT",
+    "raw_text": "Negative on bus seven. No bus seven at Alpha. Sector Four evacuees arrived in private vehicles.",
+    "ground_truth": {
+      "claim": {
+        "subject": "BUS_7",
+        "attribute": "ARRIVAL_AT_SHELTER_ALPHA",
+        "value": "NOT_OBSERVED"
+      },
+      "transport_source": "PRIVATE_VEHICLES"
+    }
+  },
+  {
+    "report_id": "RPT-028",
+    "scenario_id": "WF-001",
+    "scenario_time": "11:00",
+    "source": "TRANSPORT_COMMAND",
+    "channel": "RADIO_TRANSCRIPT",
+    "raw_text": "Unable to raise bus seven. Last confirmed status was departing staging for Sector Four.",
+    "ground_truth": {
+      "claim": {
+        "subject": "BUS_7",
+        "attribute": "COMMUNICATION",
+        "value": "NO_CONTACT"
+      },
+      "last_confirmed_state": "DISPATCHED"
+    }
+  },
+  {
+    "report_id": "RPT-029",
+    "scenario_id": "WF-001",
+    "scenario_time": "11:02",
+    "source": "AIR_OPERATIONS",
+    "channel": "RADIO_TRANSCRIPT",
+    "raw_text": "Water drop not completed. Tanker two remains holding until visibility improves.",
+    "ground_truth": {
+      "entity_id": "TANKER_2",
+      "operation_id": "OP-WATER-001",
+      "state": "HOLDING",
+      "need_still_active": true
+    }
+  },
+  {
+    "report_id": "RPT-030",
+    "scenario_id": "WF-001",
+    "scenario_time": "11:05",
+    "source": "INCIDENT_COMMAND",
+    "channel": "RADIO_TRANSCRIPT",
+    "raw_text": "Sector Four evacuation transport remains unresolved. Start verification with transport command and Sector Four checkpoint.",
+    "ground_truth": {
+      "related_operation": "OP-EVAC-001",
+      "need_still_active": true,
+      "fulfillment": "UNRESOLVED"
+    }
+  }
+]

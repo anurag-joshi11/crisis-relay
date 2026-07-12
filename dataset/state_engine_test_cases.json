@@ -1,0 +1,154 @@
+[
+  {
+    "case_id": "SE-001",
+    "operation": {
+      "current_state": "DISPATCHED",
+      "minutes_in_state": 31,
+      "fulfilled": false,
+      "priority": "HIGH"
+    },
+    "new_report": null,
+    "expected": {
+      "alert": true,
+      "type": "UNCONFIRMED",
+      "severity": "HIGH"
+    }
+  },
+  {
+    "case_id": "SE-002",
+    "operation": {
+      "current_state": "DISPATCHED",
+      "minutes_in_state": 31,
+      "fulfilled": false,
+      "priority": "HIGH"
+    },
+    "new_report": {
+      "need_still_active": true
+    },
+    "expected": {
+      "alert": true,
+      "type": "UNCONFIRMED",
+      "severity": "CRITICAL"
+    }
+  },
+  {
+    "case_id": "SE-003",
+    "operation": {
+      "current_state": "VERIFIED",
+      "minutes_in_state": 90,
+      "fulfilled": true
+    },
+    "new_report": null,
+    "expected": {
+      "alert": false
+    }
+  },
+  {
+    "case_id": "SE-004",
+    "operation": {
+      "current_state": "DISPATCHED",
+      "minutes_in_state": 35
+    },
+    "new_report": {
+      "assumed_state": "ARRIVED",
+      "verified": false
+    },
+    "expected": {
+      "resulting_state": "DISPATCHED",
+      "alert": true
+    }
+  },
+  {
+    "case_id": "SE-005",
+    "operation": {
+      "resource_id": "BUS_7",
+      "current_state": "DISPATCHED",
+      "minutes_in_state": 35
+    },
+    "new_report": {
+      "entity_id": "SECTOR_4_EVACUEES",
+      "state": "ARRIVING_AT_SHELTER",
+      "transport_source": null
+    },
+    "expected": {
+      "resulting_state": "DISPATCHED",
+      "alert": true
+    }
+  },
+  {
+    "case_id": "SE-006",
+    "operation": {
+      "resource_id": "GENERATOR_3",
+      "current_state": "DISPATCHED",
+      "minutes_in_state": 15
+    },
+    "new_report": {
+      "entity_id": "GENERATOR_3",
+      "state": "ARRIVED"
+    },
+    "expected": {
+      "resulting_state": "ARRIVED",
+      "alert": false
+    }
+  },
+  {
+    "case_id": "SE-007",
+    "operation": {
+      "resource_id": "TANKER_2",
+      "current_state": "DISPATCHED",
+      "fulfilled": false
+    },
+    "new_report": {
+      "entity_id": "TANKER_2",
+      "state": "HOLDING",
+      "blocker": "VISIBILITY"
+    },
+    "expected": {
+      "resulting_state": "HOLDING",
+      "fulfilled": false,
+      "alert": true
+    }
+  },
+  {
+    "case_id": "SE-008",
+    "operation": {
+      "current_state": "ARRIVED",
+      "fulfilled": false
+    },
+    "new_report": {
+      "state": "COMPLETED"
+    },
+    "expected": {
+      "resulting_state": "COMPLETED",
+      "fulfilled": true,
+      "alert": false
+    }
+  },
+  {
+    "case_id": "SE-009",
+    "operation": {
+      "current_state": "DISPATCHED",
+      "minutes_in_state": 8,
+      "fulfilled": false
+    },
+    "new_report": null,
+    "expected": {
+      "alert": false
+    }
+  },
+  {
+    "case_id": "SE-010",
+    "operation": {
+      "current_state": "REQUESTED",
+      "minutes_in_state": 18,
+      "fulfilled": false,
+      "priority": "CRITICAL"
+    },
+    "new_report": null,
+    "expected": {
+      "alert": true,
+      "type": "UNCONFIRMED",
+      "severity": "CRITICAL"
+    }
+  }
+]

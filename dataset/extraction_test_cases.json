@@ -1,0 +1,662 @@
+[
+  {
+    "test_id": "TC-001",
+    "category": "EXPLICIT_STATE",
+    "raw_text": "Bus 7 assigned to Sector 4.",
+    "expected": {
+      "entity_id": "BUS_7",
+      "state_transition": "ASSIGNED",
+      "expected_behavior": "EXTRACT_STATE"
+    }
+  },
+  {
+    "test_id": "TC-002",
+    "category": "EXPLICIT_STATE",
+    "raw_text": "Tanker 2 dispatched.",
+    "expected": {
+      "entity_id": "TANKER_2",
+      "state_transition": "DISPATCHED",
+      "expected_behavior": "EXTRACT_STATE"
+    }
+  },
+  {
+    "test_id": "TC-003",
+    "category": "EXPLICIT_STATE",
+    "raw_text": "Generator 3 arrived at Shelter Alpha.",
+    "expected": {
+      "entity_id": "GENERATOR_3",
+      "state_transition": "ARRIVED",
+      "expected_behavior": "EXTRACT_STATE"
+    }
+  },
+  {
+    "test_id": "TC-004",
+    "category": "EXPLICIT_STATE",
+    "raw_text": "Drop complete. Tanker 2 returning to base.",
+    "expected": {
+      "entity_id": "TANKER_2",
+      "state_transition": "COMPLETED",
+      "expected_behavior": "EXTRACT_STATE"
+    }
+  },
+  {
+    "test_id": "TC-005",
+    "category": "EXPLICIT_STATE",
+    "raw_text": "Generator operation verified at Alpha.",
+    "expected": {
+      "entity_id": "GENERATOR_3",
+      "state_transition": "VERIFIED",
+      "expected_behavior": "EXTRACT_STATE"
+    }
+  },
+  {
+    "test_id": "TC-006",
+    "category": "EXPLICIT_STATE",
+    "raw_text": "Bus 9 acknowledged the evacuation request.",
+    "expected": {
+      "entity_id": "BUS_9",
+      "state_transition": "ACKNOWLEDGED",
+      "expected_behavior": "EXTRACT_STATE"
+    }
+  },
+  {
+    "test_id": "TC-007",
+    "category": "EXPLICIT_STATE",
+    "raw_text": "Rescue team 4 arrived at Sector 5.",
+    "expected": {
+      "entity_id": "RESCUE_TEAM_4",
+      "state_transition": "ARRIVED",
+      "expected_behavior": "EXTRACT_STATE"
+    }
+  },
+  {
+    "test_id": "TC-008",
+    "category": "EXPLICIT_STATE",
+    "raw_text": "Engine 6 holding south of the ridge.",
+    "expected": {
+      "entity_id": "ENGINE_6",
+      "state_transition": "HOLDING",
+      "expected_behavior": "EXTRACT_STATE"
+    }
+  },
+  {
+    "test_id": "TC-009",
+    "category": "EXPLICIT_STATE",
+    "raw_text": "Ambulance 3 assigned to Shelter Bravo.",
+    "expected": {
+      "entity_id": "AMBULANCE_3",
+      "state_transition": "ASSIGNED",
+      "expected_behavior": "EXTRACT_STATE"
+    }
+  },
+  {
+    "test_id": "TC-010",
+    "category": "EXPLICIT_STATE",
+    "raw_text": "Evacuation completed in Sector 3.",
+    "expected": {
+      "entity_id": "SECTOR_3_EVACUATION",
+      "state_transition": "COMPLETED",
+      "expected_behavior": "EXTRACT_STATE"
+    }
+  },
+  {
+    "test_id": "TC-011",
+    "category": "IMPLICIT_STATE",
+    "raw_text": "Bus seven rolling out now.",
+    "expected": {
+      "entity_id": "BUS_7",
+      "state_transition": "DISPATCHED",
+      "expected_behavior": "EXTRACT_STATE"
+    }
+  },
+  {
+    "test_id": "TC-012",
+    "category": "IMPLICIT_STATE",
+    "raw_text": "Tanker two is en route.",
+    "expected": {
+      "entity_id": "TANKER_2",
+      "state_transition": "DISPATCHED",
+      "expected_behavior": "EXTRACT_STATE"
+    }
+  },
+  {
+    "test_id": "TC-013",
+    "category": "IMPLICIT_STATE",
+    "raw_text": "Generator three just pulled into Alpha.",
+    "expected": {
+      "entity_id": "GENERATOR_3",
+      "state_transition": "ARRIVED",
+      "expected_behavior": "EXTRACT_STATE"
+    }
+  },
+  {
+    "test_id": "TC-014",
+    "category": "IMPLICIT_STATE",
+    "raw_text": "Engine six is staged and waiting south of the ridge.",
+    "expected": {
+      "entity_id": "ENGINE_6",
+      "state_transition": "HOLDING",
+      "expected_behavior": "EXTRACT_STATE"
+    }
+  },
+  {
+    "test_id": "TC-015",
+    "category": "IMPLICIT_STATE",
+    "raw_text": "The water drop is done; we're heading home.",
+    "expected": {
+      "entity_id": "WATER_DROP",
+      "state_transition": "COMPLETED",
+      "expected_behavior": "EXTRACT_STATE"
+    }
+  },
+  {
+    "test_id": "TC-016",
+    "category": "IMPLICIT_STATE",
+    "raw_text": "Alpha confirms the generator is up and stable.",
+    "expected": {
+      "entity_id": "GENERATOR_3",
+      "state_transition": "VERIFIED",
+      "expected_behavior": "EXTRACT_STATE"
+    }
+  },
+  {
+    "test_id": "TC-017",
+    "category": "IMPLICIT_STATE",
+    "raw_text": "Ambulance three is wheels-up from staging.",
+    "expected": {
+      "entity_id": "AMBULANCE_3",
+      "state_transition": "DISPATCHED",
+      "expected_behavior": "EXTRACT_STATE"
+    }
+  },
+  {
+    "test_id": "TC-018",
+    "category": "IMPLICIT_STATE",
+    "raw_text": "Rescue four is on scene now.",
+    "expected": {
+      "entity_id": "RESCUE_TEAM_4",
+      "state_transition": "ARRIVED",
+      "expected_behavior": "EXTRACT_STATE"
+    }
+  },
+  {
+    "test_id": "TC-019",
+    "category": "IMPLICIT_STATE",
+    "raw_text": "Transport has taken the Sector 3 evacuation.",
+    "expected": {
+      "entity_id": "SECTOR_3_EVACUATION",
+      "state_transition": "ASSIGNED",
+      "expected_behavior": "EXTRACT_STATE"
+    }
+  },
+  {
+    "test_id": "TC-020",
+    "category": "IMPLICIT_STATE",
+    "raw_text": "We received the request and are working it.",
+    "expected": {
+      "entity_id": "RESOURCE_REQUEST",
+      "state_transition": "ACKNOWLEDGED",
+      "expected_behavior": "EXTRACT_STATE"
+    }
+  },
+  {
+    "test_id": "TC-021",
+    "category": "ASSUMPTION",
+    "raw_text": "Bus seven should be there by now.",
+    "expected": {
+      "state_transition": null,
+      "must_not_transition_entity": "BUS_7",
+      "must_not_transition_to": "ARRIVED",
+      "expected_behavior": "PRESERVE_UNCERTAINTY",
+      "assumption_expected": true,
+      "unresolved_link_expected": false
+    }
+  },
+  {
+    "test_id": "TC-022",
+    "category": "ASSUMPTION",
+    "raw_text": "They probably got the generator.",
+    "expected": {
+      "state_transition": null,
+      "must_not_transition_entity": "GENERATOR_3",
+      "must_not_transition_to": "ARRIVED",
+      "expected_behavior": "PRESERVE_UNCERTAINTY",
+      "assumption_expected": true,
+      "unresolved_link_expected": false
+    }
+  },
+  {
+    "test_id": "TC-023",
+    "category": "ASSUMPTION",
+    "raw_text": "Tanker two was expected five minutes ago.",
+    "expected": {
+      "state_transition": null,
+      "must_not_transition_entity": "TANKER_2",
+      "must_not_transition_to": "ARRIVED",
+      "expected_behavior": "PRESERVE_UNCERTAINTY",
+      "assumption_expected": true,
+      "unresolved_link_expected": false
+    }
+  },
+  {
+    "test_id": "TC-024",
+    "category": "ASSUMPTION",
+    "raw_text": "I assume the drop is finished.",
+    "expected": {
+      "state_transition": null,
+      "must_not_transition_entity": "WATER_DROP",
+      "must_not_transition_to": "COMPLETED",
+      "expected_behavior": "PRESERVE_UNCERTAINTY",
+      "assumption_expected": true,
+      "unresolved_link_expected": false
+    }
+  },
+  {
+    "test_id": "TC-025",
+    "category": "ASSUMPTION",
+    "raw_text": "The bus must have reached Alpha.",
+    "expected": {
+      "state_transition": null,
+      "must_not_transition_entity": "BUS_7",
+      "must_not_transition_to": "ARRIVED",
+      "expected_behavior": "PRESERVE_UNCERTAINTY",
+      "assumption_expected": true,
+      "unresolved_link_expected": false
+    }
+  },
+  {
+    "test_id": "TC-026",
+    "category": "ASSUMPTION",
+    "raw_text": "Generator is likely connected already.",
+    "expected": {
+      "state_transition": null,
+      "must_not_transition_entity": "GENERATOR_3",
+      "must_not_transition_to": "COMPLETED",
+      "expected_behavior": "PRESERVE_UNCERTAINTY",
+      "assumption_expected": true,
+      "unresolved_link_expected": false
+    }
+  },
+  {
+    "test_id": "TC-027",
+    "category": "ASSUMPTION",
+    "raw_text": "They were sent an hour ago, so evacuation should be done.",
+    "expected": {
+      "state_transition": null,
+      "must_not_transition_entity": "EVACUATION",
+      "must_not_transition_to": "COMPLETED",
+      "expected_behavior": "PRESERVE_UNCERTAINTY",
+      "assumption_expected": true,
+      "unresolved_link_expected": false
+    }
+  },
+  {
+    "test_id": "TC-028",
+    "category": "ASSUMPTION",
+    "raw_text": "I think Rescue Four made it on scene.",
+    "expected": {
+      "state_transition": null,
+      "must_not_transition_entity": "RESCUE_TEAM_4",
+      "must_not_transition_to": "ARRIVED",
+      "expected_behavior": "PRESERVE_UNCERTAINTY",
+      "assumption_expected": true,
+      "unresolved_link_expected": false
+    }
+  },
+  {
+    "test_id": "TC-029",
+    "category": "ASSUMPTION",
+    "raw_text": "Air ops probably completed the run.",
+    "expected": {
+      "state_transition": null,
+      "must_not_transition_entity": "AIR_OPERATION",
+      "must_not_transition_to": "COMPLETED",
+      "expected_behavior": "PRESERVE_UNCERTAINTY",
+      "assumption_expected": true,
+      "unresolved_link_expected": false
+    }
+  },
+  {
+    "test_id": "TC-030",
+    "category": "ASSUMPTION",
+    "raw_text": "No complaints since dispatch, so it must be resolved.",
+    "expected": {
+      "state_transition": null,
+      "must_not_transition_entity": "RESOURCE_REQUEST",
+      "must_not_transition_to": "COMPLETED",
+      "expected_behavior": "PRESERVE_UNCERTAINTY",
+      "assumption_expected": true,
+      "unresolved_link_expected": false
+    }
+  },
+  {
+    "test_id": "TC-031",
+    "category": "UNLINKED_EVENT",
+    "raw_text": "Sector Four residents arriving at Alpha.",
+    "expected": {
+      "state_transition": null,
+      "must_not_transition_entity": "BUS_7",
+      "must_not_transition_to": "ARRIVED",
+      "expected_behavior": "PRESERVE_UNCERTAINTY",
+      "assumption_expected": false,
+      "unresolved_link_expected": true
+    }
+  },
+  {
+    "test_id": "TC-032",
+    "category": "UNLINKED_EVENT",
+    "raw_text": "Water visible on the west ridge.",
+    "expected": {
+      "state_transition": null,
+      "must_not_transition_entity": "TANKER_2",
+      "must_not_transition_to": "COMPLETED",
+      "expected_behavior": "PRESERVE_UNCERTAINTY",
+      "assumption_expected": false,
+      "unresolved_link_expected": true
+    }
+  },
+  {
+    "test_id": "TC-033",
+    "category": "UNLINKED_EVENT",
+    "raw_text": "Power is back at Shelter Alpha.",
+    "expected": {
+      "state_transition": null,
+      "must_not_transition_entity": "GENERATOR_3",
+      "must_not_transition_to": "ARRIVED",
+      "expected_behavior": "PRESERVE_UNCERTAINTY",
+      "assumption_expected": false,
+      "unresolved_link_expected": true
+    }
+  },
+  {
+    "test_id": "TC-034",
+    "category": "UNLINKED_EVENT",
+    "raw_text": "Patients are reaching Bravo.",
+    "expected": {
+      "state_transition": null,
+      "must_not_transition_entity": "AMBULANCE_3",
+      "must_not_transition_to": "ARRIVED",
+      "expected_behavior": "PRESERVE_UNCERTAINTY",
+      "assumption_expected": false,
+      "unresolved_link_expected": true
+    }
+  },
+  {
+    "test_id": "TC-035",
+    "category": "UNLINKED_EVENT",
+    "raw_text": "The fire line is wet near Sector Five.",
+    "expected": {
+      "state_transition": null,
+      "must_not_transition_entity": "AIR_TANKER_8",
+      "must_not_transition_to": "COMPLETED",
+      "expected_behavior": "PRESERVE_UNCERTAINTY",
+      "assumption_expected": false,
+      "unresolved_link_expected": true
+    }
+  },
+  {
+    "test_id": "TC-036",
+    "category": "UNLINKED_EVENT",
+    "raw_text": "Evacuees are safe at the school.",
+    "expected": {
+      "state_transition": null,
+      "must_not_transition_entity": "BUS_12",
+      "must_not_transition_to": "ARRIVED",
+      "expected_behavior": "PRESERVE_UNCERTAINTY",
+      "assumption_expected": false,
+      "unresolved_link_expected": true
+    }
+  },
+  {
+    "test_id": "TC-037",
+    "category": "UNLINKED_EVENT",
+    "raw_text": "Debris has been cleared from East Road.",
+    "expected": {
+      "state_transition": null,
+      "must_not_transition_entity": "ROAD_CREW_2",
+      "must_not_transition_to": "COMPLETED",
+      "expected_behavior": "PRESERVE_UNCERTAINTY",
+      "assumption_expected": false,
+      "unresolved_link_expected": true
+    }
+  },
+  {
+    "test_id": "TC-038",
+    "category": "UNLINKED_EVENT",
+    "raw_text": "Food is now available at Shelter Charlie.",
+    "expected": {
+      "state_transition": null,
+      "must_not_transition_entity": "SUPPLY_TRUCK_5",
+      "must_not_transition_to": "ARRIVED",
+      "expected_behavior": "PRESERVE_UNCERTAINTY",
+      "assumption_expected": false,
+      "unresolved_link_expected": true
+    }
+  },
+  {
+    "test_id": "TC-039",
+    "category": "UNLINKED_EVENT",
+    "raw_text": "The injured responder is at the clinic.",
+    "expected": {
+      "state_transition": null,
+      "must_not_transition_entity": "MEDEVAC_1",
+      "must_not_transition_to": "COMPLETED",
+      "expected_behavior": "PRESERVE_UNCERTAINTY",
+      "assumption_expected": false,
+      "unresolved_link_expected": true
+    }
+  },
+  {
+    "test_id": "TC-040",
+    "category": "UNLINKED_EVENT",
+    "raw_text": "Sector Two reports lower smoke levels.",
+    "expected": {
+      "state_transition": null,
+      "must_not_transition_entity": "ENGINE_4",
+      "must_not_transition_to": "COMPLETED",
+      "expected_behavior": "PRESERVE_UNCERTAINTY",
+      "assumption_expected": false,
+      "unresolved_link_expected": true
+    }
+  },
+  {
+    "test_id": "TC-041",
+    "category": "BLOCKER_FAILURE",
+    "raw_text": "Tanker two holding south. Can't enter because of smoke.",
+    "expected": {
+      "entity_id": "TANKER_2",
+      "state_transition": "HOLDING",
+      "expected_behavior": "EXTRACT_STATE"
+    }
+  },
+  {
+    "test_id": "TC-042",
+    "category": "BLOCKER_FAILURE",
+    "raw_text": "Bus seven delayed by debris on North Road.",
+    "expected": {
+      "entity_id": "BUS_7",
+      "state_transition": "DELAYED",
+      "expected_behavior": "EXTRACT_STATE"
+    }
+  },
+  {
+    "test_id": "TC-043",
+    "category": "BLOCKER_FAILURE",
+    "raw_text": "Generator truck stopped; bridge is closed.",
+    "expected": {
+      "entity_id": "GENERATOR_TRUCK",
+      "state_transition": "BLOCKED",
+      "expected_behavior": "EXTRACT_STATE"
+    }
+  },
+  {
+    "test_id": "TC-044",
+    "category": "BLOCKER_FAILURE",
+    "raw_text": "Rescue four unable to proceed due to chemical exposure risk.",
+    "expected": {
+      "entity_id": "RESCUE_TEAM_4",
+      "state_transition": "BLOCKED",
+      "expected_behavior": "EXTRACT_STATE"
+    }
+  },
+  {
+    "test_id": "TC-045",
+    "category": "BLOCKER_FAILURE",
+    "raw_text": "Ambulance three is holding for police clearance.",
+    "expected": {
+      "entity_id": "AMBULANCE_3",
+      "state_transition": "HOLDING",
+      "expected_behavior": "EXTRACT_STATE"
+    }
+  },
+  {
+    "test_id": "TC-046",
+    "category": "BLOCKER_FAILURE",
+    "raw_text": "Engine six turned back after the access road collapsed.",
+    "expected": {
+      "entity_id": "ENGINE_6",
+      "state_transition": "FAILED",
+      "expected_behavior": "EXTRACT_STATE"
+    }
+  },
+  {
+    "test_id": "TC-047",
+    "category": "BLOCKER_FAILURE",
+    "raw_text": "Air unit eight aborted the drop because visibility is zero.",
+    "expected": {
+      "entity_id": "AIR_UNIT_8",
+      "state_transition": "FAILED",
+      "expected_behavior": "EXTRACT_STATE"
+    }
+  },
+  {
+    "test_id": "TC-048",
+    "category": "BLOCKER_FAILURE",
+    "raw_text": "Supply truck five is stuck in floodwater.",
+    "expected": {
+      "entity_id": "SUPPLY_TRUCK_5",
+      "state_transition": "BLOCKED",
+      "expected_behavior": "EXTRACT_STATE"
+    }
+  },
+  {
+    "test_id": "TC-049",
+    "category": "BLOCKER_FAILURE",
+    "raw_text": "Team Bravo paused evacuation due to structural instability.",
+    "expected": {
+      "entity_id": "TEAM_BRAVO",
+      "state_transition": "HOLDING",
+      "expected_behavior": "EXTRACT_STATE"
+    }
+  },
+  {
+    "test_id": "TC-050",
+    "category": "BLOCKER_FAILURE",
+    "raw_text": "Boat two lost propulsion and cannot continue.",
+    "expected": {
+      "entity_id": "BOAT_2",
+      "state_transition": "FAILED",
+      "expected_behavior": "EXTRACT_STATE"
+    }
+  },
+  {
+    "test_id": "TC-051",
+    "category": "COMPLETION",
+    "raw_text": "Water drop complete. Tanker two returning.",
+    "expected": {
+      "entity_id": "TANKER_2",
+      "state_transition": "COMPLETED",
+      "expected_behavior": "EXTRACT_STATE"
+    }
+  },
+  {
+    "test_id": "TC-052",
+    "category": "COMPLETION",
+    "raw_text": "All Sector Four evacuees accounted for. Evacuation verified.",
+    "expected": {
+      "entity_id": "SECTOR_4_EVACUATION",
+      "state_transition": "VERIFIED",
+      "expected_behavior": "EXTRACT_STATE"
+    }
+  },
+  {
+    "test_id": "TC-053",
+    "category": "COMPLETION",
+    "raw_text": "Generator connected and powering refrigeration.",
+    "expected": {
+      "entity_id": "GENERATOR_3",
+      "state_transition": "COMPLETED",
+      "expected_behavior": "EXTRACT_STATE"
+    }
+  },
+  {
+    "test_id": "TC-054",
+    "category": "COMPLETION",
+    "raw_text": "Road clearance complete; supervisor confirms both lanes open.",
+    "expected": {
+      "entity_id": "ROAD_CLEARANCE",
+      "state_transition": "VERIFIED",
+      "expected_behavior": "EXTRACT_STATE"
+    }
+  },
+  {
+    "test_id": "TC-055",
+    "category": "COMPLETION",
+    "raw_text": "Search finished in Building C.",
+    "expected": {
+      "entity_id": "BUILDING_C_SEARCH",
+      "state_transition": "COMPLETED",
+      "expected_behavior": "EXTRACT_STATE"
+    }
+  },
+  {
+    "test_id": "TC-056",
+    "category": "COMPLETION",
+    "raw_text": "Shelter Alpha confirms the delivery inventory matches the manifest.",
+    "expected": {
+      "entity_id": "SUPPLY_DELIVERY",
+      "state_transition": "VERIFIED",
+      "expected_behavior": "EXTRACT_STATE"
+    }
+  },
+  {
+    "test_id": "TC-057",
+    "category": "COMPLETION",
+    "raw_text": "Patient transfer complete.",
+    "expected": {
+      "entity_id": "PATIENT_TRANSFER",
+      "state_transition": "COMPLETED",
+      "expected_behavior": "EXTRACT_STATE"
+    }
+  },
+  {
+    "test_id": "TC-058",
+    "category": "COMPLETION",
+    "raw_text": "Fire line construction completed on the east flank.",
+    "expected": {
+      "entity_id": "FIRE_LINE",
+      "state_transition": "COMPLETED",
+      "expected_behavior": "EXTRACT_STATE"
+    }
+  },
+  {
+    "test_id": "TC-059",
+    "category": "COMPLETION",
+    "raw_text": "Command confirms Bus 12 arrived and unloaded all passengers.",
+    "expected": {
+      "entity_id": "BUS_12",
+      "state_transition": "VERIFIED",
+      "expected_behavior": "EXTRACT_STATE"
+    }
+  },
+  {
+    "test_id": "TC-060",
+    "category": "COMPLETION",
+    "raw_text": "Hazmat decontamination complete and independently confirmed.",
+    "expected": {
+      "entity_id": "DECONTAMINATION",
+      "state_transition": "VERIFIED",
+      "expected_behavior": "EXTRACT_STATE"
+    }
+  }
+]
