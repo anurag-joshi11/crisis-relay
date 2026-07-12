@@ -4,5 +4,6 @@ __pycache__/
 .venv/
 venv/
 .env
+benchmark_results/
 .env.*
 !.env.example
