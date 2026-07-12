@@ -389,6 +389,21 @@ class GeminiExtractionTests(unittest.TestCase):
         self.assertIn('"probably got the generator"', prompt)
         self.assertIn("uncertain ARRIVED, not COMPLETED", prompt)
 
+    def test_prompt_maps_unidentified_request_resolution_assumption(self) -> None:
+        client = FakeGeminiClient(extraction_payload())
+        service = GeminiIntelligenceService(client=client, model="test-model")
+        service.extract_report(
+            ExtractRequest(
+                raw_text="No complaints since dispatch, so it must be resolved.",
+                scenario_context=default_context(),
+            )
+        )
+
+        prompt = client.models.calls[0]["contents"]
+        self.assertIn("unidentified request-resolution assumptions", prompt)
+        self.assertIn("assumption.entity_id to RESOURCE_REQUEST", prompt)
+        self.assertIn("blocked_transition to COMPLETED", prompt)
+
     def test_generate_content_uses_response_json_schema_with_strict_schema(self) -> None:
         schema = ExtractionResult.model_json_schema()
         self.assertTrue(schema_contains_key(schema, "additionalProperties"))

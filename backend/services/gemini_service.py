@@ -89,6 +89,7 @@ Blocker guidance:
 Uncertainty and claims:
 - For uncertain task/outcome statements, use the canonical task/outcome entity_id in assumption.entity_id when the specific resource is not named.
 - For "probably got the generator", "got" means uncertain ARRIVED, not COMPLETED.
+- For unidentified request-resolution assumptions such as "must be resolved", set assumption.entity_id to RESOURCE_REQUEST and blocked_transition to COMPLETED.
 - For unlinked outcome reports where an outcome is stated but the responsible operational resource is not identified, emit a claim with unresolved=true instead of a state_event.
 - A claim must remain unresolved=true when it cannot be safely tied to a specific resource state transition, even if the outcome sounds favorable or complete.
 - Facility/environment outcomes such as "power is back" or "debris has been cleared" are unlinked claims unless the report explicitly names the responsible operation/task entity.
