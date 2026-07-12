@@ -345,6 +345,23 @@ class GeminiExtractionTests(unittest.TestCase):
         prompt = client.models.calls[0]["contents"]
         self.assertIn('"received the request" -> ACKNOWLEDGED for RESOURCE_REQUEST', prompt)
         self.assertIn('"taken the evacuation", "taken the assignment", or "has taken"', prompt)
+        self.assertIn("do not emit an additional ASSIGNED state", prompt)
+        self.assertIn("use the named evacuation task entity_id, not generic TRANSPORT", prompt)
+
+    def test_prompt_preserves_explicit_team_actor(self) -> None:
+        client = FakeGeminiClient(extraction_payload())
+        service = GeminiIntelligenceService(client=client, model="test-model")
+        service.extract_report(
+            ExtractRequest(
+                raw_text="Team Bravo paused evacuation due to structural instability.",
+                scenario_context=default_context(),
+            )
+        )
+
+        prompt = client.models.calls[0]["contents"]
+        self.assertIn('"Team Bravo" -> TEAM_BRAVO', prompt)
+        self.assertIn("preserve that actor's canonical entity_id", prompt)
+        self.assertIn("instead of substituting a scenario_context resource", prompt)
 
     def test_prompt_uses_final_verified_state_when_confirmed(self) -> None:
         client = FakeGeminiClient(extraction_payload())
@@ -359,6 +376,20 @@ class GeminiExtractionTests(unittest.TestCase):
         prompt = client.models.calls[0]["contents"]
         self.assertIn('"up and stable", or "unloaded all passengers" -> VERIFIED', prompt)
         self.assertIn("emit only the final VERIFIED state_event", prompt)
+
+    def test_prompt_keeps_connected_powering_as_completed(self) -> None:
+        client = FakeGeminiClient(extraction_payload())
+        service = GeminiIntelligenceService(client=client, model="test-model")
+        service.extract_report(
+            ExtractRequest(
+                raw_text="Generator connected and powering refrigeration.",
+                scenario_context=default_context(),
+            )
+        )
+
+        prompt = client.models.calls[0]["contents"]
+        self.assertIn('"connected", or "powering" -> COMPLETED', prompt)
+        self.assertIn('"verified", "confirms", "confirmed"', prompt)
 
     def test_prompt_preserves_unlinked_outcomes_as_unresolved_claims(self) -> None:
         client = FakeGeminiClient(extraction_payload())
