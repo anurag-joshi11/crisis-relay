@@ -268,6 +268,7 @@ class GeminiExtractionTests(unittest.TestCase):
         self.assertIn("use the resource_id as state_event.entity_id", prompt)
         self.assertIn("put the operation id in state_event.operation_id", prompt)
         self.assertIn("Do not use an operation id as state_event.entity_id", prompt)
+        self.assertIn("responsible resource is explicitly named in the same report", prompt)
 
     def test_prompt_canonicalizes_report_entities_not_in_context(self) -> None:
         client = FakeGeminiClient(extraction_payload())
@@ -300,6 +301,7 @@ class GeminiExtractionTests(unittest.TestCase):
         self.assertIn("use the canonical task/outcome entity_id", prompt)
         self.assertIn("Explicit task/outcome completion or verification is enough", prompt)
         self.assertIn("do not downgrade it to an assumption or unresolved claim", prompt)
+        self.assertIn("Do not treat scenario_context operation mapping alone", prompt)
 
     def test_prompt_emits_state_event_for_named_blocked_entity(self) -> None:
         client = FakeGeminiClient(extraction_payload())

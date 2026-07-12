@@ -70,7 +70,8 @@ State guidance:
 - Canonicalize task/outcome entities similarly: "water drop" -> WATER_DROP, "Sector 3 evacuation" -> SECTOR_3_EVACUATION, "road clearance" -> ROAD_CLEARANCE, "Building C search" -> BUILDING_C_SEARCH, "patient transfer" -> PATIENT_TRANSFER, "fire line" -> FIRE_LINE, "decontamination" -> DECONTAMINATION, and "resource request" -> RESOURCE_REQUEST.
 - When a task or outcome is explicitly stated but no responsible resource is named in the same report, use the canonical task/outcome entity_id instead of substituting a scenario_context resource_id.
 - Explicit task/outcome completion or verification is enough for a state_event on that task/outcome entity_id; do not downgrade it to an assumption or unresolved claim merely because no resource is named.
-- When an operation completion is reported and a responsible resource is explicitly identifiable in the same report, use the resource_id as state_event.entity_id and put the operation id in state_event.operation_id.
+- When an operation completion is reported and a responsible resource is explicitly named in the same report, use the resource_id as state_event.entity_id and put the operation id in state_event.operation_id.
+- Do not treat scenario_context operation mapping alone as an explicitly named responsible resource; if the report only names the task/outcome, keep the task/outcome entity_id.
 - Do not use an operation id as state_event.entity_id when the mapped resource_id is known.
 
 Blocker guidance:
