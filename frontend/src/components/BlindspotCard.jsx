@@ -1,7 +1,7 @@
 export default function BlindspotCard({ blindspot, selected, decision, onSelect }) {
   const severityClass = blindspot.severity?.toLowerCase() || 'medium'
   const decisionClass = decision ? `decision-${decision.status.toLowerCase()}` : ''
-  const statusLabel = decision?.status || 'OPEN'
+  const statusLabel = decision?.status || blindspot.severity || 'OPEN'
 
   return (
     <button className={`card blindspot-card severity-${severityClass} ${decisionClass} ${selected ? 'selected' : ''}`} onClick={() => onSelect(blindspot)}>

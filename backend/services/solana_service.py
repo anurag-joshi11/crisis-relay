@@ -3,17 +3,30 @@ from __future__ import annotations
 import hashlib
 import json
 
-from solana.rpc.api import Client
-from solana.rpc.types import TxOpts
-from solders.instruction import Instruction
-from solders.keypair import Keypair
-from solders.message import MessageV0
-from solders.pubkey import Pubkey
-from solders.transaction import VersionedTransaction
+try:
+    from solana.rpc.api import Client
+    from solana.rpc.types import TxOpts
+    from solders.instruction import Instruction
+    from solders.keypair import Keypair
+    from solders.message import MessageV0
+    from solders.pubkey import Pubkey
+    from solders.transaction import VersionedTransaction
+except ImportError:
+    Client = None
+    TxOpts = None
+    Instruction = None
+    Keypair = None
+    MessageV0 = None
+    Pubkey = None
+    VersionedTransaction = None
 
 from backend.config import settings
 
-MEMO_PROGRAM_ID = Pubkey.from_string("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr")
+MEMO_PROGRAM_ID = (
+    Pubkey.from_string("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr")
+    if Pubkey is not None
+    else None
+)
 
 
 def build_payload(dispatch_id: str, operation_id: str, resource_id: str, approval_id: str) -> tuple[str, str]:
@@ -32,6 +45,8 @@ def build_payload(dispatch_id: str, operation_id: str, resource_id: str, approva
 def submit_receipt(payload_json: str) -> tuple[str | None, str, str | None]:
     if not settings.solana_enabled:
         return None, "DISABLED", None
+    if Client is None or TxOpts is None or Instruction is None or Keypair is None or MessageV0 is None or VersionedTransaction is None or MEMO_PROGRAM_ID is None:
+        return None, "MISSING_DEPENDENCY", "Solana packages are not installed"
     if not settings.solana_private_key:
         return None, "MISSING_CONFIG", "SOLANA_PRIVATE_KEY is not set"
 

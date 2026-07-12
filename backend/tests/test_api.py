@@ -31,3 +31,27 @@ def test_demo_and_core_routes():
     assert set(status.json()) == {"scenario", "reports", "operations", "blindspots", "selected_timeline", "demo"}
 
     deps.runner = None
+
+
+def test_draft_status_request_uses_live_blindspot_store():
+    deps.runner = ScenarioRunner(store=InMemoryMongoService())
+    deps.runner.reset()
+    client = TestClient(app)
+
+    blindspot_id = None
+    for _ in range(30):
+        status = client.post("/api/demo/next-event")
+        assert status.status_code == 200
+        blindspots = status.json()["blindspots"]
+        if blindspots:
+            blindspot_id = blindspots[0]["blindspot_id"]
+            break
+
+    assert blindspot_id is not None
+
+    draft = client.post(f"/api/blindspots/{blindspot_id}/draft-status-request")
+    assert draft.status_code == 200
+    assert draft.json()["blindspot_id"] == blindspot_id
+    assert draft.json()["approval_status"] == "PENDING"
+
+    deps.runner = None

@@ -7,6 +7,15 @@ const USE_MOCKS = (import.meta.env.VITE_USE_MOCKS || 'true') === 'true'
 const USE_REAL_APPROVALS = (import.meta.env.VITE_REAL_APPROVALS || 'false') === 'true'
 let mockSnapshot = structuredClone(dashboardSnapshot)
 
+function friendlyError(detail) {
+  const known = {
+    blindspot_not_found: 'That active issue is no longer available. Try the latest issue.',
+    dispatch_not_found: 'That update request is no longer available.',
+    operation_not_found: 'The related operation could not be found.',
+  }
+  return known[detail] || detail.replaceAll('_', ' ')
+}
+
 async function request(path, options = {}) {
   const res = await fetch(`${API_BASE}${path}`, {
     headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
@@ -16,7 +25,7 @@ async function request(path, options = {}) {
     let detail = ''
     try {
       const body = await res.json()
-      detail = body.detail ? `:${body.detail}` : ''
+      detail = body.detail ? `:${friendlyError(String(body.detail))}` : ''
     } catch {
       detail = ''
     }

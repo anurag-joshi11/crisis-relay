@@ -2,8 +2,9 @@ from __future__ import annotations
 
 from copy import deepcopy
 
-from fastapi import APIRouter, Body, HTTPException
+from fastapi import APIRouter, Body, Depends, HTTPException
 
+from backend.api.deps import get_runner
 from backend.config import CONTRACTS_DIR
 from backend.services.elevenlabs_service import synthesize_approved_text
 from backend.services.solana_service import build_payload, submit_receipt
@@ -11,7 +12,6 @@ from backend.utils import load_json, utc_now
 
 router = APIRouter()
 
-_dashboard = load_json(CONTRACTS_DIR / "dashboard_snapshot.json")
 _dispatches = {"DSP-001": load_json(CONTRACTS_DIR / "dispatch_result.json")}
 _dispatch_counter = 1
 
@@ -23,19 +23,24 @@ def _dispatch_for(dispatch_id: str) -> dict:
     return dispatch
 
 
-def _operation_for(operation_id: str) -> dict:
-    for operation in _dashboard["operations"]:
-        if operation["operation_id"] == operation_id:
-            return operation
-    raise HTTPException(status_code=404, detail="operation_not_found")
+def _blindspot_for(runner, blindspot_id: str) -> dict:
+    blindspot = runner.store.get_blindspot(blindspot_id)
+    if not blindspot:
+        raise HTTPException(status_code=404, detail="blindspot_not_found")
+    return blindspot
+
+
+def _operation_for(runner, operation_id: str) -> dict:
+    operation = runner.store.get_operation(operation_id)
+    if not operation:
+        raise HTTPException(status_code=404, detail="operation_not_found")
+    return operation
 
 
 @router.post("/blindspots/{blindspot_id}/draft-status-request")
-def draft_status_request(blindspot_id: str) -> dict:
+def draft_status_request(blindspot_id: str, runner=Depends(get_runner)) -> dict:
     global _dispatch_counter
-    blindspot = next((item for item in _dashboard["blindspots"] if item["blindspot_id"] == blindspot_id), None)
-    if not blindspot:
-        raise HTTPException(status_code=404, detail="blindspot_not_found")
+    blindspot = _blindspot_for(runner, blindspot_id)
 
     existing = next((item for item in _dispatches.values() if item["blindspot_id"] == blindspot_id), None)
     if existing and existing["approval_status"] == "PENDING":
@@ -98,7 +103,7 @@ def preview_audio(dispatch_id: str, payload: dict | None = Body(default=None)) -
 
 
 @router.post("/dispatches/{dispatch_id}/approve")
-def approve(dispatch_id: str, payload: dict | None = Body(default=None)) -> dict:
+def approve(dispatch_id: str, payload: dict | None = Body(default=None), runner=Depends(get_runner)) -> dict:
     dispatch = _dispatch_for(dispatch_id)
 
     payload = payload or {}
@@ -114,7 +119,7 @@ def approve(dispatch_id: str, payload: dict | None = Body(default=None)) -> dict
     if dispatch.get("audio_status") != "AVAILABLE":
         raise HTTPException(status_code=409, detail=f"audio_not_ready:{dispatch.get('audio_status')}")
 
-    operation = _operation_for(dispatch["operation_id"])
+    operation = _operation_for(runner, dispatch["operation_id"])
     approval_id = dispatch.get("approval_id") or f"APR-{dispatch['dispatch_id'].split('-')[-1]}"
     payload_json, payload_hash = build_payload(
         dispatch_id=dispatch["dispatch_id"],

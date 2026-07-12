@@ -4,13 +4,17 @@ import os
 from dataclasses import dataclass
 from pathlib import Path
 
-from dotenv import load_dotenv
+try:
+    from dotenv import load_dotenv
+except ImportError:
+    load_dotenv = None
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
 CONTRACTS_DIR = ROOT_DIR / "contracts"
 GENERATED_AUDIO_DIR = ROOT_DIR / "backend" / "generated_audio"
 
-load_dotenv(ROOT_DIR / ".env")
+if load_dotenv:
+    load_dotenv(ROOT_DIR / ".env")
 
 
 @dataclass(frozen=True)

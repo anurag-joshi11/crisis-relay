@@ -5,8 +5,8 @@ export default function OperationPanel({ operations = [] }) {
     <section className="panel operation-panel">
       <div className="panel-title-row">
         <div>
-          <h2>Resource Snapshot</h2>
-          <p className="panel-subtitle">Latest confirmed state for tracked resources.</p>
+          <h2>Tracked Resources</h2>
+          <p className="panel-subtitle">Latest confirmed operational state for each tracked resource.</p>
         </div>
         <span className="alert-count neutral">{operations.length}</span>
       </div>

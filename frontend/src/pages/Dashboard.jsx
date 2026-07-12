@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { approveDispatch, draftStatusRequest, getDashboard, getOperationTimeline, nextEvent, previewDispatchAudio, rejectDispatch, resetDemo } from '../api'
+import { approveDispatch, draftStatusRequest, getDashboard, nextEvent, previewDispatchAudio, rejectDispatch, resetDemo } from '../api'
 import Header from '../components/Header'
 import ReportFeed from '../components/ReportFeed'
 import OperationPanel from '../components/OperationPanel'
@@ -27,13 +27,9 @@ export default function Dashboard() {
     getDashboard().then((data) => {
       setSnapshot(data)
       setSelectedBlindspot(data.blindspots?.[0] || null)
+      setTimeline(data.selected_timeline || null)
     }).catch((e) => setError(e.message))
   }, [])
-
-  useEffect(() => {
-    if (!selectedBlindspot) return
-    getOperationTimeline(selectedBlindspot.operation_id).then(setTimeline).catch((e) => setError(e.message))
-  }, [selectedBlindspot, snapshot?.demo?.event_index])
 
   async function handleReset() {
     setProcessing(true)
@@ -41,6 +37,7 @@ export default function Dashboard() {
       const data = await resetDemo()
       setSnapshot(data)
       setSelectedBlindspot(data.blindspots?.[0] || null)
+      setTimeline(data.selected_timeline || null)
       setDispatchDraft(null)
       setApprovalOpen(false)
       setDecisionsByBlindspot({})
@@ -54,6 +51,7 @@ export default function Dashboard() {
     try {
       const data = await nextEvent()
       setSnapshot(data)
+      setTimeline(data.selected_timeline || null)
       setSelectedBlindspot((current) => (
         data.blindspots?.find((blindspot) => blindspot.blindspot_id === current?.blindspot_id)
         || data.blindspots?.[0]

@@ -6,13 +6,14 @@ export default function CommandIntelligence({ blindspot, timeline, dispatch, dec
   const isRejected = decision?.status === 'REJECTED'
   const headerStatus = decision?.status || blindspot?.severity
   const audioUrl = resolveAudioUrl(dispatch?.audio_url)
+  const assessmentClass = decision ? `decision-${decision.status.toLowerCase()}` : ''
 
   return (
     <section className="panel command">
       <div className="command-header">
         <div>
           <h2>Priority Decision</h2>
-          <p className="muted">Review the selected issue and decide whether to request a resource update.</p>
+          <p className="muted">Review the selected issue and decide whether to request an update.</p>
         </div>
         {headerStatus ? (
           <span className={`badge ${decision ? `decision-badge decision-${decision.status.toLowerCase()}` : `severity-${blindspot.severity.toLowerCase()}`}`}>
@@ -22,19 +23,19 @@ export default function CommandIntelligence({ blindspot, timeline, dispatch, dec
       </div>
 
       <div className="command-grid">
-        <div className="assessment-box">
+        <div className={`assessment-box ${assessmentClass}`}>
           <span className="section-label">Assessment</span>
           {blindspot ? (
-            <div className="action-headline">
-              {isApproved ? 'Status request approved' : isRejected ? 'Status request rejected' : `${blindspot.resource_id} needs status check`}
+            <div className={`action-headline ${assessmentClass}`}>
+              {isApproved ? 'Update approved' : isRejected ? 'Update rejected' : `${blindspot.resource_id} needs status check`}
             </div>
           ) : null}
           {blindspot ? (
             <p className="assessment-text">
               {isApproved
-                ? `The operator approved a resource update request. ${blindspot.resource_id} remains unverified until a new field report confirms arrival or completion.`
+                ? `The operator approved an update request. ${blindspot.resource_id} remains unverified until a new field report confirms arrival or completion.`
                 : isRejected
-                  ? `The operator cancelled the resource update request. No broadcast was sent. ${blindspot.resource_id} remains unverified.`
+                  ? `The operator cancelled the update request. No broadcast was sent. ${blindspot.resource_id} remains unverified.`
                   : blindspot.reason}
             </p>
           ) : <p>Field reports have not produced a selectable active issue yet. Advance the scenario, then choose an issue from the left rail.</p>}
@@ -65,18 +66,18 @@ export default function CommandIntelligence({ blindspot, timeline, dispatch, dec
                   <a href={audioUrl} target="_blank" rel="noreferrer">Open MP3</a>
                 </div>
               ) : null}
-              <button onClick={onDraft} disabled={!blindspot}>SEND FOLLOW-UP UPDATE</button>
+              <button onClick={onDraft} disabled={!blindspot}>SEND FOLLOW-UP</button>
             </>
           ) : isRejected ? (
             <>
               <strong className="decision-title">Rejected</strong>
               <p>Request cancelled. Nothing was broadcast.</p>
-              <button onClick={onDraft} disabled={!blindspot}>CREATE NEW REQUEST</button>
+              <button onClick={onDraft} disabled={!blindspot}>NEW REQUEST</button>
             </>
           ) : (
             <>
               <p>{blindspot ? 'Ask the resource for current status before assuming arrival or completion.' : 'A resource update can be requested once an active issue is selected.'}</p>
-              <button onClick={onDraft} disabled={!blindspot}>REQUEST RESOURCE UPDATE</button>
+              <button onClick={onDraft} disabled={!blindspot}>REQUEST UPDATE</button>
             </>
           )}
         </div>
