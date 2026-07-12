@@ -57,6 +57,8 @@ Safety rules:
 
 State guidance:
 - "assigned" -> ASSIGNED.
+- "taken the evacuation", "taken the assignment", or "has taken" a task -> ASSIGNED for that task entity.
+- "received the request" -> ACKNOWLEDGED for RESOURCE_REQUEST.
 - "dispatched", "en route", "rolling out", "wheels-up" -> DISPATCHED.
 - "arrived", "on scene", "pulled into" -> ARRIVED only when explicit.
 - "holding", "staged and waiting", "paused" -> HOLDING.
@@ -64,15 +66,17 @@ State guidance:
 - "blocked", "unable to proceed", "cannot enter", "stopped" -> BLOCKED unless a clearer HOLDING or FAILED state applies.
 - "turned back", "aborted", "lost propulsion", "cannot continue" -> FAILED.
 - "complete", "finished", "connected" -> COMPLETED only when explicit.
-- "verified", "confirms", "independently confirmed" -> VERIFIED only when explicit.
+- "verified", "confirms", "confirmed", "accounted for", "matches the manifest", "up and stable", or "unloaded all passengers" -> VERIFIED only when explicit.
 - If a reported entity is not found in scenario_context, still extract the event when the text itself identifies an operational entity.
+- When a state_event or blocker entity_id matches a scenario_context operation.resource_id, fill operation_id with that operation id.
 - Canonicalize report-mentioned entities to stable UPPER_SNAKE_CASE IDs: "Engine 6" -> ENGINE_6, "Rescue Four" -> RESCUE_TEAM_4, "generator truck" -> GENERATOR_TRUCK, "supply truck five" -> SUPPLY_TRUCK_5, "Team Bravo" -> TEAM_BRAVO, "Boat two" -> BOAT_2.
-- Canonicalize task/outcome entities similarly: "water drop" -> WATER_DROP, "Sector 3 evacuation" -> SECTOR_3_EVACUATION, "road clearance" -> ROAD_CLEARANCE, "Building C search" -> BUILDING_C_SEARCH, "patient transfer" -> PATIENT_TRANSFER, "fire line" -> FIRE_LINE, "decontamination" -> DECONTAMINATION, and "resource request" -> RESOURCE_REQUEST.
+- Canonicalize task/outcome entities similarly: "water drop" -> WATER_DROP, "Sector 3 evacuation" -> SECTOR_3_EVACUATION, generic "evacuation" -> EVACUATION, "air ops" or "air operation" -> AIR_OPERATION, "road clearance" -> ROAD_CLEARANCE, "supply delivery" or "delivery inventory" -> SUPPLY_DELIVERY, "Building C search" -> BUILDING_C_SEARCH, "patient transfer" -> PATIENT_TRANSFER, "fire line" -> FIRE_LINE, "decontamination" -> DECONTAMINATION, and "resource request" or an unidentified received/resolved request -> RESOURCE_REQUEST.
 - When a task or outcome is explicitly stated but no responsible resource is named in the same report, use the canonical task/outcome entity_id instead of substituting a scenario_context resource_id.
 - Explicit task/outcome completion or verification is enough for a state_event on that task/outcome entity_id; do not downgrade it to an assumption or unresolved claim merely because no resource is named.
 - When an operation completion is reported and a responsible resource is explicitly named in the same report, use the resource_id as state_event.entity_id and put the operation id in state_event.operation_id.
 - Do not treat scenario_context operation mapping alone as an explicitly named responsible resource; if the report only names the task/outcome, keep the task/outcome entity_id.
 - Do not use an operation id as state_event.entity_id when the mapped resource_id is known.
+- When a report contains both an intermediate state and a final explicit verification for the same entity, emit only the final VERIFIED state_event.
 
 Blocker guidance:
 - When a report states why an entity cannot proceed, enter, arrive, or complete, emit a blocker.
@@ -84,8 +88,10 @@ Blocker guidance:
 
 Uncertainty and claims:
 - For uncertain task/outcome statements, use the canonical task/outcome entity_id in assumption.entity_id when the specific resource is not named.
+- For "probably got the generator", "got" means uncertain ARRIVED, not COMPLETED.
 - For unlinked outcome reports where an outcome is stated but the responsible operational resource is not identified, emit a claim with unresolved=true instead of a state_event.
 - A claim must remain unresolved=true when it cannot be safely tied to a specific resource state transition, even if the outcome sounds favorable or complete.
+- Facility/environment outcomes such as "power is back" or "debris has been cleared" are unlinked claims unless the report explicitly names the responsible operation/task entity.
 """.strip()
 
 
