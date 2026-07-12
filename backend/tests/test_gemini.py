@@ -239,6 +239,21 @@ class GeminiExtractionTests(unittest.TestCase):
         self.assertEqual(result.assumptions[0].entity_id, "BUS_7")
         self.assertEqual(result.assumptions[0].blocked_transition, "ARRIVED")
 
+    def test_prompt_requires_blocker_type_to_capture_cause_not_state(self) -> None:
+        client = FakeGeminiClient(extraction_payload())
+        service = GeminiIntelligenceService(client=client, model="test-model")
+        service.extract_report(
+            ExtractRequest(
+                raw_text="Tanker two holding south. Can't enter because of smoke.",
+                scenario_context=default_context(),
+            )
+        )
+
+        prompt = client.models.calls[0]["contents"]
+        self.assertIn("blocker.type must describe the cause category", prompt)
+        self.assertIn("Do not use BLOCKED as blocker.type", prompt)
+        self.assertIn("Use VISIBILITY for smoke", prompt)
+
     def test_generate_content_uses_response_json_schema_with_strict_schema(self) -> None:
         schema = ExtractionResult.model_json_schema()
         self.assertTrue(schema_contains_key(schema, "additionalProperties"))

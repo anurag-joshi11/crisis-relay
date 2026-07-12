@@ -65,6 +65,12 @@ State guidance:
 - "turned back", "aborted", "lost propulsion", "cannot continue" -> FAILED.
 - "complete", "finished", "connected" -> COMPLETED only when explicit.
 - "verified", "confirms", "independently confirmed" -> VERIFIED only when explicit.
+
+Blocker guidance:
+- When a report states why an entity cannot proceed, enter, arrive, or complete, emit a blocker.
+- blocker.type must describe the cause category, not the lifecycle state. Do not use BLOCKED as blocker.type when the cause is known.
+- Use VISIBILITY for smoke, zero visibility, visibility, or unable to enter because of smoke.
+- Use DEBRIS for debris, CLOSED_BRIDGE for closed bridges, CHEMICAL_EXPOSURE for chemical exposure risk, POLICE_CLEARANCE for police clearance, ROAD_COLLAPSE for collapsed access roads, FLOODWATER for floodwater, STRUCTURAL_INSTABILITY for structural instability, and MECHANICAL_FAILURE for propulsion or vehicle failure.
 """.strip()
 
 
