@@ -1,0 +1,11 @@
+.env
+.venv/
+venv/
+node_modules/
+backend/generated_audio/
+frontend/dist/
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+

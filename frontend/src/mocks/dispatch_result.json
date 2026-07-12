@@ -1,0 +1,16 @@
+{
+  "dispatch_id": "DSP-001",
+  "blindspot_id": "BS-001",
+  "operation_id": "OP-WATER-001",
+  "ai_draft": "Tanker Two, confirm current status relative to Sector Four. Report arrived, holding, delayed, or unable to proceed.",
+  "draft_source": "GEMINI",
+  "approved_text": null,
+  "approval_status": "PENDING",
+  "approval_id": null,
+  "approved_at": null,
+  "payload_hash": null,
+  "solana_status": "NOT_ATTEMPTED",
+  "solana_signature": null,
+  "audio_url": null
+}
+
