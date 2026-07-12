@@ -65,14 +65,24 @@ State guidance:
 - "turned back", "aborted", "lost propulsion", "cannot continue" -> FAILED.
 - "complete", "finished", "connected" -> COMPLETED only when explicit.
 - "verified", "confirms", "independently confirmed" -> VERIFIED only when explicit.
-- When an operation completion is reported and a responsible resource is identifiable in the same report or scenario_context operation mapping, use the resource_id as state_event.entity_id and put the operation id in state_event.operation_id.
+- If a reported entity is not found in scenario_context, still extract the event when the text itself identifies an operational entity.
+- Canonicalize report-mentioned entities to stable UPPER_SNAKE_CASE IDs: "Engine 6" -> ENGINE_6, "Rescue Four" -> RESCUE_TEAM_4, "generator truck" -> GENERATOR_TRUCK, "supply truck five" -> SUPPLY_TRUCK_5, "Team Bravo" -> TEAM_BRAVO, "Boat two" -> BOAT_2.
+- Canonicalize task/outcome entities similarly: "water drop" -> WATER_DROP, "Sector 3 evacuation" -> SECTOR_3_EVACUATION, "road clearance" -> ROAD_CLEARANCE, "Building C search" -> BUILDING_C_SEARCH, "patient transfer" -> PATIENT_TRANSFER, "fire line" -> FIRE_LINE, "decontamination" -> DECONTAMINATION, and "resource request" -> RESOURCE_REQUEST.
+- When a task or outcome is explicitly stated but no responsible resource is named in the same report, use the canonical task/outcome entity_id instead of substituting a scenario_context resource_id.
+- When an operation completion is reported and a responsible resource is explicitly identifiable in the same report, use the resource_id as state_event.entity_id and put the operation id in state_event.operation_id.
 - Do not use an operation id as state_event.entity_id when the mapped resource_id is known.
 
 Blocker guidance:
 - When a report states why an entity cannot proceed, enter, arrive, or complete, emit a blocker.
+- If the blocker subject is named in the report, blocker.entity_id must use that subject's canonical entity_id, even when it is not listed in scenario_context.
 - blocker.type must describe the cause category, not the lifecycle state. Do not use BLOCKED as blocker.type when the cause is known.
 - Use VISIBILITY for smoke, zero visibility, visibility, or unable to enter because of smoke.
 - Use DEBRIS for debris, CLOSED_BRIDGE for closed bridges, CHEMICAL_EXPOSURE for chemical exposure risk, POLICE_CLEARANCE for police clearance, ROAD_COLLAPSE for collapsed access roads, FLOODWATER for floodwater, STRUCTURAL_INSTABILITY for structural instability, and MECHANICAL_FAILURE for propulsion or vehicle failure.
+
+Uncertainty and claims:
+- For uncertain task/outcome statements, use the canonical task/outcome entity_id in assumption.entity_id when the specific resource is not named.
+- For unlinked outcome reports where an outcome is stated but the responsible operational resource is not identified, emit a claim with unresolved=true instead of a state_event.
+- A claim must remain unresolved=true when it cannot be safely tied to a specific resource state transition, even if the outcome sounds favorable or complete.
 """.strip()
 
 
