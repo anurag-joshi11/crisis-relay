@@ -1,0 +1,6 @@
+fastapi>=0.111,<0.116
+uvicorn[standard]>=0.30,<0.32
+pymongo>=4.7
+python-dotenv>=1.0
+pytest>=8.2
+httpx>=0.27,<0.29
