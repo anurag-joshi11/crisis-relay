@@ -268,6 +268,172 @@ class GeminiExtractionTests(unittest.TestCase):
         self.assertIn("use the resource_id as state_event.entity_id", prompt)
         self.assertIn("put the operation id in state_event.operation_id", prompt)
         self.assertIn("Do not use an operation id as state_event.entity_id", prompt)
+        self.assertIn("responsible resource is explicitly named in the same report", prompt)
+
+    def test_prompt_canonicalizes_report_entities_not_in_context(self) -> None:
+        client = FakeGeminiClient(extraction_payload())
+        service = GeminiIntelligenceService(client=client, model="test-model")
+        service.extract_report(
+            ExtractRequest(
+                raw_text="Engine 6 holding south of the ridge.",
+                scenario_context=default_context(),
+            )
+        )
+
+        prompt = client.models.calls[0]["contents"]
+        self.assertIn("still extract the event when the text itself identifies an operational entity", prompt)
+        self.assertIn('"Engine 6" -> ENGINE_6', prompt)
+        self.assertIn('"Rescue Four" -> RESCUE_TEAM_4', prompt)
+
+    def test_prompt_links_known_resource_events_to_operation_id(self) -> None:
+        client = FakeGeminiClient(extraction_payload())
+        service = GeminiIntelligenceService(client=client, model="test-model")
+        service.extract_report(
+            ExtractRequest(
+                raw_text="Bus seven rolling out now.",
+                scenario_context=default_context(),
+            )
+        )
+
+        prompt = client.models.calls[0]["contents"]
+        self.assertIn("matches a scenario_context operation.resource_id", prompt)
+        self.assertIn("fill operation_id with that operation id", prompt)
+
+    def test_prompt_prefers_task_entity_when_no_resource_named(self) -> None:
+        client = FakeGeminiClient(extraction_payload())
+        service = GeminiIntelligenceService(client=client, model="test-model")
+        service.extract_report(
+            ExtractRequest(
+                raw_text="The water drop is done; we're heading home.",
+                scenario_context=default_context(),
+            )
+        )
+
+        prompt = client.models.calls[0]["contents"]
+        self.assertIn('"water drop" -> WATER_DROP', prompt)
+        self.assertIn("no responsible resource is named in the same report", prompt)
+        self.assertIn("use the canonical task/outcome entity_id", prompt)
+        self.assertIn("Explicit task/outcome completion or verification is enough", prompt)
+        self.assertIn("do not downgrade it to an assumption or unresolved claim", prompt)
+        self.assertIn("Do not treat scenario_context operation mapping alone", prompt)
+        self.assertIn('"supply delivery" or "delivery inventory" -> SUPPLY_DELIVERY', prompt)
+
+    def test_prompt_emits_state_event_for_named_blocked_entity(self) -> None:
+        client = FakeGeminiClient(extraction_payload())
+        service = GeminiIntelligenceService(client=client, model="test-model")
+        service.extract_report(
+            ExtractRequest(
+                raw_text="Generator truck stopped; bridge is closed.",
+                scenario_context=default_context(),
+            )
+        )
+
+        prompt = client.models.calls[0]["contents"]
+        self.assertIn("blocker.entity_id must use that subject's canonical entity_id", prompt)
+        self.assertIn("emit the blocked/failed state_event as well as the blocker", prompt)
+
+    def test_prompt_maps_request_and_assignment_language(self) -> None:
+        client = FakeGeminiClient(extraction_payload())
+        service = GeminiIntelligenceService(client=client, model="test-model")
+        service.extract_report(
+            ExtractRequest(
+                raw_text="We received the request and are working it.",
+                scenario_context=default_context(),
+            )
+        )
+
+        prompt = client.models.calls[0]["contents"]
+        self.assertIn('"received the request" -> ACKNOWLEDGED for RESOURCE_REQUEST', prompt)
+        self.assertIn('"taken the evacuation", "taken the assignment", or "has taken"', prompt)
+        self.assertIn("do not emit an additional ASSIGNED state", prompt)
+        self.assertIn("use the named evacuation task entity_id, not generic TRANSPORT", prompt)
+
+    def test_prompt_preserves_explicit_team_actor(self) -> None:
+        client = FakeGeminiClient(extraction_payload())
+        service = GeminiIntelligenceService(client=client, model="test-model")
+        service.extract_report(
+            ExtractRequest(
+                raw_text="Team Bravo paused evacuation due to structural instability.",
+                scenario_context=default_context(),
+            )
+        )
+
+        prompt = client.models.calls[0]["contents"]
+        self.assertIn('"Team Bravo" -> TEAM_BRAVO', prompt)
+        self.assertIn("preserve that actor's canonical entity_id", prompt)
+        self.assertIn("instead of substituting a scenario_context resource", prompt)
+
+    def test_prompt_uses_final_verified_state_when_confirmed(self) -> None:
+        client = FakeGeminiClient(extraction_payload())
+        service = GeminiIntelligenceService(client=client, model="test-model")
+        service.extract_report(
+            ExtractRequest(
+                raw_text="Command confirms Bus 12 arrived and unloaded all passengers.",
+                scenario_context=default_context(),
+            )
+        )
+
+        prompt = client.models.calls[0]["contents"]
+        self.assertIn('"up and stable", or "unloaded all passengers" -> VERIFIED', prompt)
+        self.assertIn("emit only the final VERIFIED state_event", prompt)
+
+    def test_prompt_keeps_connected_powering_as_completed(self) -> None:
+        client = FakeGeminiClient(extraction_payload())
+        service = GeminiIntelligenceService(client=client, model="test-model")
+        service.extract_report(
+            ExtractRequest(
+                raw_text="Generator connected and powering refrigeration.",
+                scenario_context=default_context(),
+            )
+        )
+
+        prompt = client.models.calls[0]["contents"]
+        self.assertIn('"connected", or "powering" -> COMPLETED', prompt)
+        self.assertIn('"verified", "confirms", "confirmed"', prompt)
+
+    def test_prompt_preserves_unlinked_outcomes_as_unresolved_claims(self) -> None:
+        client = FakeGeminiClient(extraction_payload())
+        service = GeminiIntelligenceService(client=client, model="test-model")
+        service.extract_report(
+            ExtractRequest(
+                raw_text="Power is back at Shelter Alpha.",
+                scenario_context=default_context(),
+            )
+        )
+
+        prompt = client.models.calls[0]["contents"]
+        self.assertIn("emit a claim with unresolved=true instead of a state_event", prompt)
+        self.assertIn("A claim must remain unresolved=true", prompt)
+        self.assertIn('Facility/environment outcomes such as "power is back"', prompt)
+
+    def test_prompt_maps_uncertain_got_generator_to_arrived(self) -> None:
+        client = FakeGeminiClient(extraction_payload())
+        service = GeminiIntelligenceService(client=client, model="test-model")
+        service.extract_report(
+            ExtractRequest(
+                raw_text="They probably got the generator.",
+                scenario_context=default_context(),
+            )
+        )
+
+        prompt = client.models.calls[0]["contents"]
+        self.assertIn('"probably got the generator"', prompt)
+        self.assertIn("uncertain ARRIVED, not COMPLETED", prompt)
+
+    def test_prompt_maps_unidentified_request_resolution_assumption(self) -> None:
+        client = FakeGeminiClient(extraction_payload())
+        service = GeminiIntelligenceService(client=client, model="test-model")
+        service.extract_report(
+            ExtractRequest(
+                raw_text="No complaints since dispatch, so it must be resolved.",
+                scenario_context=default_context(),
+            )
+        )
+
+        prompt = client.models.calls[0]["contents"]
+        self.assertIn("unidentified request-resolution assumptions", prompt)
+        self.assertIn("assumption.entity_id to RESOURCE_REQUEST", prompt)
+        self.assertIn("blocked_transition to COMPLETED", prompt)
 
     def test_generate_content_uses_response_json_schema_with_strict_schema(self) -> None:
         schema = ExtractionResult.model_json_schema()

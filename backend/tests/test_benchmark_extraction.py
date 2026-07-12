@@ -7,8 +7,10 @@ from pathlib import Path
 from backend.benchmark_extraction import (
     create_report,
     load_context,
+    parse_args,
     run_benchmark,
     run_case,
+    retry_delay_seconds,
     score_case,
 )
 from backend.schemas.gemini_schema import ExtractionResult
@@ -63,13 +65,16 @@ def event(entity_id="TANKER_2", new_state="DISPATCHED", operation_id="OP-WATER-0
 
 
 class FakeService:
-    def __init__(self, responses):
+    def __init__(self, responses, call_log=None):
         self.responses = list(responses)
         self.calls = []
+        self.call_log = call_log
         self.model = "fake-model"
 
     def extract_report(self, request):
         self.calls.append(request.raw_text)
+        if self.call_log is not None:
+            self.call_log.append(f"call:{request.raw_text}")
         response = self.responses.pop(0)
         if isinstance(response, Exception):
             raise response
@@ -413,7 +418,7 @@ class BenchmarkScoringTests(unittest.TestCase):
         second = case(test_id="TC-OK")
         service = FakeService(
             [
-                RuntimeError("rate limit for secret-key"),
+                RuntimeError("service exploded for secret-key"),
                 result(
                     state_events=[event()],
                     related_operation="OP-WATER-001",
@@ -430,6 +435,7 @@ class BenchmarkScoringTests(unittest.TestCase):
                 service=service,
                 report=report,
                 report_path=report_path,
+                sleeper=lambda seconds: None,
             )
 
         self.assertEqual(report["summary"]["attempted_cases"], 2)
@@ -466,10 +472,216 @@ class BenchmarkScoringTests(unittest.TestCase):
                 service=service,
                 report=report,
                 report_path=report_path,
+                sleeper=lambda seconds: None,
             )
 
         self.assertEqual(service.calls, [second["raw_text"]])
         self.assertEqual(len(report["cases"]), 2)
+
+    def test_default_delay_configuration(self) -> None:
+        args = parse_args([])
+        report = create_report([case()], "fake-model")
+
+        self.assertEqual(args.delay_seconds, 5.0)
+        self.assertEqual(args.max_rate_limit_retries, 3)
+        self.assertEqual(report["delay_seconds"], 5.0)
+        self.assertEqual(report["max_rate_limit_retries"], 3)
+
+    def test_custom_delay_seconds_parsing(self) -> None:
+        args = parse_args(["--delay-seconds", "1.25", "--max-rate-limit-retries", "2"])
+
+        self.assertEqual(args.delay_seconds, 1.25)
+        self.assertEqual(args.max_rate_limit_retries, 2)
+
+    def test_no_sleep_before_first_api_call_and_delay_between_calls(self) -> None:
+        first = case(test_id="TC-FIRST", raw_text="first")
+        second = case(test_id="TC-SECOND", raw_text="second")
+        events: list[str] = []
+        service = FakeService(
+            [
+                result(state_events=[event()], related_operation="OP-WATER-001"),
+                result(state_events=[event()], related_operation="OP-WATER-001"),
+            ],
+            call_log=events,
+        )
+
+        def sleeper(seconds: float) -> None:
+            events.append(f"sleep:{seconds}")
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            report = create_report([first, second], service.model)
+            run_benchmark(
+                cases=[first, second],
+                context=self.context,
+                service=service,
+                report=report,
+                report_path=Path(temp_dir) / "report.json",
+                delay_seconds=2.5,
+                sleeper=sleeper,
+            )
+
+        self.assertEqual(events, ["call:first", "sleep:2.5", "call:second"])
+
+    def test_skipped_resume_cases_do_not_sleep(self) -> None:
+        first = case(test_id="TC-DONE", raw_text="first")
+        second = case(test_id="TC-LEFT", raw_text="second")
+        events: list[str] = []
+        service = FakeService(
+            [result(state_events=[event()], related_operation="OP-WATER-001")],
+            call_log=events,
+        )
+        report = create_report([first, second], service.model)
+        report["cases"].append(
+            {
+                "case_id": "TC-DONE",
+                "category": "EXPLICIT_STATE",
+                "passed": True,
+                "field_details": [],
+            }
+        )
+
+        def sleeper(seconds: float) -> None:
+            events.append(f"sleep:{seconds}")
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            run_benchmark(
+                cases=[first, second],
+                context=self.context,
+                service=service,
+                report=report,
+                report_path=Path(temp_dir) / "report.json",
+                delay_seconds=9.0,
+                sleeper=sleeper,
+            )
+
+        self.assertEqual(events, ["call:second"])
+
+    def test_429_case_retries(self) -> None:
+        service = FakeService(
+            [
+                RuntimeError("429 RESOURCE_EXHAUSTED retryDelay: 2s"),
+                result(state_events=[event()], related_operation="OP-WATER-001"),
+            ]
+        )
+        sleeps: list[float] = []
+
+        case_result = run_case(
+            case(),
+            self.context,
+            service,
+            max_rate_limit_retries=3,
+            sleeper=sleeps.append,
+        )
+
+        self.assertTrue(case_result["passed"], case_result)
+        self.assertEqual(case_result["api_attempt_count"], 2)
+        self.assertEqual(sleeps, [3.0])
+        self.assertEqual(len(case_result["retry_details"]), 1)
+
+    def test_non_429_exception_does_not_retry(self) -> None:
+        service = FakeService([ValueError("schema mismatch")])
+        sleeps: list[float] = []
+
+        case_result = run_case(case(), self.context, service, sleeper=sleeps.append)
+
+        self.assertFalse(case_result["passed"])
+        self.assertEqual(case_result["api_attempt_count"], 1)
+        self.assertEqual(service.calls, ["Tanker two dispatched."])
+        self.assertEqual(sleeps, [])
+        self.assertNotIn("retry_details", case_result)
+
+    def test_retry_count_is_capped(self) -> None:
+        service = FakeService(
+            [
+                RuntimeError("429 RESOURCE_EXHAUSTED"),
+                RuntimeError("429 RESOURCE_EXHAUSTED"),
+                RuntimeError("429 RESOURCE_EXHAUSTED"),
+            ]
+        )
+        sleeps: list[float] = []
+
+        case_result = run_case(
+            case(),
+            self.context,
+            service,
+            delay_seconds=1.0,
+            max_rate_limit_retries=2,
+            sleeper=sleeps.append,
+        )
+
+        self.assertFalse(case_result["passed"])
+        self.assertEqual(case_result["api_attempt_count"], 3)
+        self.assertEqual(len(case_result["retry_details"]), 2)
+        self.assertEqual(sleeps, [2.0, 3.0])
+
+    def test_provider_retry_in_delay_is_preferred(self) -> None:
+        retry_delay = retry_delay_seconds(
+            RuntimeError("429 RESOURCE_EXHAUSTED. Please retry in 17.698451209s."),
+            attempt=1,
+            delay_seconds=5.0,
+        )
+
+        self.assertAlmostEqual(retry_delay, 18.698451209)
+
+    def test_resume_retries_api_error_cases(self) -> None:
+        benchmark_case = case(test_id="TC-ERR")
+        service = FakeService(
+            [result(state_events=[event()], related_operation="OP-WATER-001")]
+        )
+        report = create_report([benchmark_case], service.model)
+        report["cases"].append(
+            {
+                "case_id": "TC-ERR",
+                "category": "EXPLICIT_STATE",
+                "passed": False,
+                "api_attempt_count": 1,
+                "error": {"type": "RuntimeError", "message": "429 RESOURCE_EXHAUSTED"},
+                "field_details": [],
+            }
+        )
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            run_benchmark(
+                cases=[benchmark_case],
+                context=self.context,
+                service=service,
+                report=report,
+                report_path=Path(temp_dir) / "report.json",
+                sleeper=lambda seconds: None,
+            )
+
+        self.assertEqual(service.calls, [benchmark_case["raw_text"]])
+        self.assertEqual(len(report["cases"]), 1)
+        self.assertTrue(report["cases"][0]["passed"], report["cases"])
+        self.assertNotIn("error", report["cases"][0])
+
+    def test_resumed_api_error_result_is_replaced_not_duplicated(self) -> None:
+        benchmark_case = case(test_id="TC-ERR")
+        service = FakeService([ValueError("non retryable")])
+        report = create_report([benchmark_case], service.model)
+        report["cases"].append(
+            {
+                "case_id": "TC-ERR",
+                "category": "EXPLICIT_STATE",
+                "passed": False,
+                "api_attempt_count": 1,
+                "error": {"type": "RuntimeError", "message": "429 RESOURCE_EXHAUSTED"},
+                "field_details": [],
+            }
+        )
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            run_benchmark(
+                cases=[benchmark_case],
+                context=self.context,
+                service=service,
+                report=report,
+                report_path=Path(temp_dir) / "report.json",
+                sleeper=lambda seconds: None,
+            )
+
+        self.assertEqual(len(report["cases"]), 1)
+        self.assertEqual(report["cases"][0]["error"]["type"], "ValueError")
 
 
 if __name__ == "__main__":

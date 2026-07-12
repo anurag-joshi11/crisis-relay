@@ -3,9 +3,11 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
+import time
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 from backend.schemas.gemini_schema import ExtractRequest, ExtractionResult, ScenarioContext
 from backend.services.gemini_service import GeminiIntelligenceService
@@ -274,7 +276,12 @@ def blocker_dump(blocker) -> dict[str, Any] | None:
     return blocker.model_dump() if blocker else None
 
 
-def create_report(cases: list[dict[str, Any]], model: str) -> dict[str, Any]:
+def create_report(
+    cases: list[dict[str, Any]],
+    model: str,
+    delay_seconds: float = 5.0,
+    max_rate_limit_retries: int = 3,
+) -> dict[str, Any]:
     now = datetime.now(UTC).isoformat()
     selected_ids = [case["test_id"] for case in cases]
     return {
@@ -282,6 +289,8 @@ def create_report(cases: list[dict[str, Any]], model: str) -> dict[str, Any]:
         "created_at_utc": now,
         "updated_at_utc": now,
         "model": model,
+        "delay_seconds": delay_seconds,
+        "max_rate_limit_retries": max_rate_limit_retries,
         "total_cases": len(cases),
         "selected_case_ids": selected_ids,
         "summary": empty_summary(len(cases)),
@@ -309,13 +318,32 @@ def run_benchmark(
     service: GeminiIntelligenceService,
     report: dict[str, Any],
     report_path: Path,
+    delay_seconds: float = 5.0,
+    max_rate_limit_retries: int = 3,
+    sleeper: Callable[[float], None] = time.sleep,
 ) -> dict[str, Any]:
-    completed = {case_result["case_id"] for case_result in report["cases"]}
+    report.setdefault("delay_seconds", delay_seconds)
+    report.setdefault("max_rate_limit_retries", max_rate_limit_retries)
+    completed = {
+        case_result["case_id"]
+        for case_result in report["cases"]
+        if "error" not in case_result
+    }
+    attempted_api_call = False
     for case in cases:
         if case["test_id"] in completed:
             continue
-        case_result = run_case(case, context, service)
-        report["cases"].append(case_result)
+        case_result = run_case(
+            case,
+            context,
+            service,
+            delay_before_first_call=attempted_api_call,
+            delay_seconds=delay_seconds,
+            max_rate_limit_retries=max_rate_limit_retries,
+            sleeper=sleeper,
+        )
+        attempted_api_call = attempted_api_call or case_result.get("api_attempt_count", 0) > 0
+        replace_case_result(report, case_result)
         update_summary(report)
         save_report(report, report_path)
         status = "PASS" if case_result["passed"] else "FAIL"
@@ -323,25 +351,95 @@ def run_benchmark(
     return report
 
 
-def run_case(case: dict[str, Any], context: ScenarioContext, service: GeminiIntelligenceService) -> dict[str, Any]:
-    try:
-        result = service.extract_report(
-            ExtractRequest(raw_text=case["raw_text"], scenario_context=context)
-        )
-        return score_case(case, result, context)
-    except Exception as exc:
-        return {
-            "case_id": case["test_id"],
-            "category": case["category"],
-            "passed": False,
-            "error": {
-                "type": type(exc).__name__,
-                "message": sanitize_error(str(exc)),
-            },
-            "field_details": [
-                detail("service_exception", False, "successful ExtractionResult", type(exc).__name__)
-            ],
-        }
+def run_case(
+    case: dict[str, Any],
+    context: ScenarioContext,
+    service: GeminiIntelligenceService,
+    delay_before_first_call: bool = False,
+    delay_seconds: float = 5.0,
+    max_rate_limit_retries: int = 3,
+    sleeper: Callable[[float], None] = time.sleep,
+) -> dict[str, Any]:
+    api_attempt_count = 0
+    retry_details: list[dict[str, Any]] = []
+    while True:
+        if api_attempt_count == 0 and delay_before_first_call:
+            sleeper(delay_seconds)
+        api_attempt_count += 1
+        try:
+            result = service.extract_report(
+                ExtractRequest(raw_text=case["raw_text"], scenario_context=context)
+            )
+            scored = score_case(case, result, context)
+            scored["api_attempt_count"] = api_attempt_count
+            if retry_details:
+                scored["retry_details"] = retry_details
+            return scored
+        except Exception as exc:
+            if is_rate_limit_error(exc) and api_attempt_count <= max_rate_limit_retries:
+                retry_delay = retry_delay_seconds(exc, api_attempt_count, delay_seconds)
+                retry_details.append(
+                    {
+                        "attempt": api_attempt_count,
+                        "next_delay_seconds": retry_delay,
+                        "error": {
+                            "type": type(exc).__name__,
+                            "message": sanitize_error(str(exc)),
+                        },
+                    }
+                )
+                sleeper(retry_delay)
+                continue
+            case_result = {
+                "case_id": case["test_id"],
+                "category": case["category"],
+                "passed": False,
+                "api_attempt_count": api_attempt_count,
+                "error": {
+                    "type": type(exc).__name__,
+                    "message": sanitize_error(str(exc)),
+                },
+                "field_details": [
+                    detail("service_exception", False, "successful ExtractionResult", type(exc).__name__)
+                ],
+            }
+            if retry_details:
+                case_result["retry_details"] = retry_details
+            return case_result
+
+
+def replace_case_result(report: dict[str, Any], case_result: dict[str, Any]) -> None:
+    for index, existing in enumerate(report["cases"]):
+        if existing["case_id"] == case_result["case_id"]:
+            report["cases"][index] = case_result
+            return
+    report["cases"].append(case_result)
+
+
+def is_rate_limit_error(exc: Exception) -> bool:
+    text = f"{type(exc).__name__} {exc}".lower()
+    return "429" in text or "resource_exhausted" in text or "rate limit" in text or "quota" in text
+
+
+def retry_delay_seconds(exc: Exception, attempt: int, delay_seconds: float) -> float:
+    provider_delay = provider_retry_delay_seconds(str(exc))
+    if provider_delay is not None:
+        return provider_delay + 1.0
+    return max(delay_seconds, 1.0) * (2 ** (attempt - 1)) + 1.0
+
+
+def provider_retry_delay_seconds(message: str) -> float | None:
+    patterns = [
+        r"retry[_ -]?delay['\"]?\s*[:=]\s*['\"]?([0-9]+(?:\.[0-9]+)?)s?",
+        r"retry[_ -]?delay\s*\{\s*seconds:\s*([0-9]+(?:\.[0-9]+)?)",
+        r"retry after\s*([0-9]+(?:\.[0-9]+)?)\s*seconds?",
+        r"retry in\s*([0-9]+(?:\.[0-9]+)?)s?",
+    ]
+    for pattern in patterns:
+        match = re.search(pattern, message, re.IGNORECASE)
+        if match:
+            return float(match.group(1))
+    return None
 
 
 def sanitize_error(message: str) -> str:
@@ -433,6 +531,13 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--resume", type=Path, help="Resume an existing benchmark report JSON file.")
     parser.add_argument("--case-id", help="Run a single benchmark case ID.")
     parser.add_argument("--limit", type=int, help="Run only the first N selected cases.")
+    parser.add_argument("--delay-seconds", type=float, default=5.0, help="Seconds to wait between Gemini API calls.")
+    parser.add_argument(
+        "--max-rate-limit-retries",
+        type=int,
+        default=3,
+        help="Maximum retries for transient Gemini 429/RESOURCE_EXHAUSTED failures.",
+    )
     return parser.parse_args(argv)
 
 
@@ -445,14 +550,29 @@ def main(argv: list[str] | None = None, service: GeminiIntelligenceService | Non
         report_path = args.resume
         report = load_report(report_path)
         cases = [case for case in all_cases if case["test_id"] in set(report["selected_case_ids"])]
+        report.setdefault("delay_seconds", args.delay_seconds)
+        report.setdefault("max_rate_limit_retries", args.max_rate_limit_retries)
     else:
         cases = select_cases(all_cases, args.case_id, args.limit)
         service = service or GeminiIntelligenceService()
-        report = create_report(cases, service.model)
+        report = create_report(
+            cases,
+            service.model,
+            delay_seconds=args.delay_seconds,
+            max_rate_limit_retries=args.max_rate_limit_retries,
+        )
         report_path = report_path_for_new_run()
 
     service = service or GeminiIntelligenceService()
-    run_benchmark(cases=cases, context=context, service=service, report=report, report_path=report_path)
+    run_benchmark(
+        cases=cases,
+        context=context,
+        service=service,
+        report=report,
+        report_path=report_path,
+        delay_seconds=report["delay_seconds"],
+        max_rate_limit_retries=report["max_rate_limit_retries"],
+    )
     summary = report["summary"]
     print(f"\nPassed {summary['passed_cases']}/{summary['attempted_cases']} attempted cases")
     print(f"Report: {report_path}")
