@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { approveDispatch, draftStatusRequest, getDashboard, getOperationTimeline, nextEvent, rejectDispatch, resetDemo } from '../api'
+import { approveDispatch, draftStatusRequest, getDashboard, getOperationTimeline, nextEvent, previewDispatchAudio, rejectDispatch, resetDemo } from '../api'
 import Header from '../components/Header'
 import ReportFeed from '../components/ReportFeed'
 import OperationPanel from '../components/OperationPanel'
@@ -8,6 +8,9 @@ import CommandIntelligence from '../components/CommandIntelligence'
 import ApprovalModal from '../components/ApprovalModal'
 import AudioPlayer from '../components/AudioPlayer'
 import DecisionHistory from '../components/DecisionHistory'
+import WorkflowNav from '../components/WorkflowNav'
+import IncidentOverview from '../components/IncidentOverview'
+import DecisionHistoryPage from '../components/DecisionHistoryPage'
 
 export default function Dashboard() {
   const [snapshot, setSnapshot] = useState(null)
@@ -19,6 +22,7 @@ export default function Dashboard() {
   const [timeline, setTimeline] = useState(null)
   const [approvalOpen, setApprovalOpen] = useState(false)
   const [decisionsByBlindspot, setDecisionsByBlindspot] = useState({})
+  const [activeView, setActiveView] = useState('command')
 
   useEffect(() => {
     getDashboard().then((data) => {
@@ -63,26 +67,52 @@ export default function Dashboard() {
 
   async function handleDraft() {
     if (!selectedBlindspot) return
-    const data = await draftStatusRequest(selectedBlindspot.blindspot_id)
-    setDispatchDraft(data)
-    setApprovalText(data.ai_draft || '')
-    setApprovalOpen(true)
+    try {
+      setError('')
+      const data = await draftStatusRequest(selectedBlindspot.blindspot_id)
+      setDispatchDraft(data)
+      setApprovalText(data.ai_draft || '')
+      setApprovalOpen(true)
+    } catch (e) {
+      setError(e.message)
+    }
   }
 
   async function handleApprove() {
     if (!dispatchDraft) return
-    const data = await approveDispatch(dispatchDraft.dispatch_id, approvalText)
-    setDispatchDraft(data)
-    recordDecision('APPROVED', 'Resource update requested. Awaiting field confirmation.')
-    setApprovalOpen(false)
+    try {
+      setError('')
+      const data = await approveDispatch(dispatchDraft.dispatch_id, approvalText)
+      setDispatchDraft(data)
+      recordDecision('APPROVED', 'Resource update requested. Awaiting field confirmation.')
+      setApprovalOpen(false)
+    } catch (e) {
+      setError(e.message)
+    }
+  }
+
+  async function handlePreviewAudio() {
+    if (!dispatchDraft) return
+    try {
+      setError('')
+      const data = await previewDispatchAudio(dispatchDraft.dispatch_id, approvalText)
+      setDispatchDraft(data)
+    } catch (e) {
+      setError(e.message)
+    }
   }
 
   async function handleReject() {
     if (!dispatchDraft) return
-    const data = await rejectDispatch(dispatchDraft.dispatch_id)
-    setDispatchDraft(data)
-    recordDecision('REJECTED', 'Request cancelled. Nothing was broadcast.')
-    setApprovalOpen(false)
+    try {
+      setError('')
+      const data = await rejectDispatch(dispatchDraft.dispatch_id)
+      setDispatchDraft(data)
+      recordDecision('REJECTED', 'Request cancelled. Nothing was broadcast.')
+      setApprovalOpen(false)
+    } catch (e) {
+      setError(e.message)
+    }
   }
 
   function recordDecision(status, summary) {
@@ -103,36 +133,58 @@ export default function Dashboard() {
 
   if (!snapshot) return <div className="shell">Loading...</div>
 
+  const currentDecisions = selectedBlindspot ? decisionsByBlindspot[selectedBlindspot.blindspot_id] || [] : []
+  const allDecisions = Object.values(decisionsByBlindspot).flat()
+  const openIssueCount = snapshot.blindspots.filter((blindspot) => !decisionsByBlindspot[blindspot.blindspot_id]?.length).length
+
   return (
     <div className="shell">
       <Header scenario={snapshot.scenario} onReset={handleReset} onNext={handleNext} processing={processing} />
+      <WorkflowNav activeView={activeView} onChange={setActiveView} />
       {error ? <div className="error">{error}</div> : null}
-      <main className="console-grid">
-        <aside className="left-rail">
-          <ReportFeed reports={snapshot.reports} />
-          <UnconfirmedPanel
-            blindspots={snapshot.blindspots}
-            selectedBlindspot={selectedBlindspot}
-            decisionsByBlindspot={decisionsByBlindspot}
-            onSelect={setSelectedBlindspot}
-          />
-          <OperationPanel operations={snapshot.operations} />
-          <DecisionHistory
-            blindspot={selectedBlindspot}
-            decisions={selectedBlindspot ? decisionsByBlindspot[selectedBlindspot.blindspot_id] || [] : []}
-          />
-        </aside>
+      {activeView === 'overview' ? (
+        <IncidentOverview
+          scenario={snapshot.scenario}
+          openIssues={openIssueCount}
+          decisionsCount={allDecisions.length}
+          onOpenCommand={() => setActiveView('command')}
+        />
+      ) : null}
+      {activeView === 'command' ? (
+        <main className="console-grid">
+          <aside className="left-rail">
+            <ReportFeed reports={snapshot.reports} />
+            <UnconfirmedPanel
+              blindspots={snapshot.blindspots}
+              selectedBlindspot={selectedBlindspot}
+              decisionsByBlindspot={decisionsByBlindspot}
+              onSelect={setSelectedBlindspot}
+            />
+            <OperationPanel operations={snapshot.operations} />
+            <DecisionHistory
+              blindspot={selectedBlindspot}
+              decisions={currentDecisions}
+            />
+          </aside>
 
-        <section className="mission-focus">
-          <CommandIntelligence
-            blindspot={selectedBlindspot}
-            timeline={timeline}
-            dispatch={dispatchDraft}
-            decision={selectedBlindspot ? decisionsByBlindspot[selectedBlindspot.blindspot_id]?.[0] : null}
-            onDraft={handleDraft}
-          />
-        </section>
-      </main>
+          <section className="mission-focus">
+            <CommandIntelligence
+              blindspot={selectedBlindspot}
+              timeline={timeline}
+              dispatch={dispatchDraft}
+              decision={currentDecisions[0]}
+              onDraft={handleDraft}
+            />
+          </section>
+        </main>
+      ) : null}
+      {activeView === 'history' ? (
+        <DecisionHistoryPage
+          scenario={snapshot.scenario}
+          decisions={allDecisions}
+          onOpenCommand={() => setActiveView('command')}
+        />
+      ) : null}
       {dispatchDraft ? <AudioPlayer audioUrl={dispatchDraft.audio_url} /> : null}
       {dispatchDraft && approvalOpen ? (
         <>
@@ -142,6 +194,7 @@ export default function Dashboard() {
             setText={setApprovalText}
             onReject={handleReject}
             onApprove={handleApprove}
+            onPreviewAudio={handlePreviewAudio}
             onClose={() => setApprovalOpen(false)}
           />
         </>

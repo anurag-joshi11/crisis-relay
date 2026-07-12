@@ -24,15 +24,19 @@ Only these variables are needed for this branch:
 ```bash
 ELEVENLABS_API_KEY=
 ELEVENLABS_VOICE_ID=
+ELEVENLABS_MODEL_ID=eleven_multilingual_v2
 ELEVENLABS_ENABLED=false
+SOLANA_ENABLED=false
 SOLANA_RPC_URL=https://api.devnet.solana.com
 SOLANA_PRIVATE_KEY=
 CORS_ORIGINS=http://localhost:5173
 VITE_API_URL=http://localhost:8000
 VITE_USE_MOCKS=true
+VITE_REAL_APPROVALS=false
 ```
 
 Keep `VITE_USE_MOCKS=true` while developing independently. Set it to `false` only when integrating with Student 2's backend endpoints.
+Set `VITE_REAL_APPROVALS=true` only when you want the mock dashboard to call the backend approval endpoints for ElevenLabs/Solana testing.
 
 ## Local Commands
 
@@ -54,6 +58,7 @@ npm run dev
 
 - No ElevenLabs or Solana call should happen before human approval.
 - Keep `ELEVENLABS_ENABLED=false` until the approval flow is verified.
+- Keep `SOLANA_ENABLED=false` until devnet wallet funding is verified.
 - ElevenLabs must synthesize only `approved_text`.
 - Solana should store only compact identifiers and a SHA-256 hash, never raw reports or sensitive text.
 - If Solana is missing credentials or the devnet wallet is unfunded, return `PENDING_SYNC` with no fake signature.

@@ -3,6 +3,7 @@ import dispatchResult from './mocks/dispatch_result.json'
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 const USE_MOCKS = (import.meta.env.VITE_USE_MOCKS || 'true') === 'true'
+const USE_REAL_APPROVALS = (import.meta.env.VITE_REAL_APPROVALS || 'false') === 'true'
 let mockSnapshot = structuredClone(dashboardSnapshot)
 
 async function request(path, options = {}) {
@@ -11,7 +12,14 @@ async function request(path, options = {}) {
     ...options,
   })
   if (!res.ok) {
-    throw new Error(`request_failed:${res.status}`)
+    let detail = ''
+    try {
+      const body = await res.json()
+      detail = body.detail ? `:${body.detail}` : ''
+    } catch {
+      detail = ''
+    }
+    throw new Error(`request_failed:${res.status}${detail}`)
   }
   return res.json()
 }
@@ -74,11 +82,18 @@ export async function nextEvent() {
 }
 
 export async function draftStatusRequest(blindspotId) {
+  if (USE_REAL_APPROVALS) return request(`/api/blindspots/${blindspotId}/draft-status-request`, { method: 'POST' })
   if (USE_MOCKS) return { ...structuredClone(dispatchResult), blindspot_id: blindspotId }
   return request(`/api/blindspots/${blindspotId}/draft-status-request`, { method: 'POST' })
 }
 
 export async function approveDispatch(dispatchId, approvedText) {
+  if (USE_REAL_APPROVALS) {
+    return request(`/api/dispatches/${dispatchId}/approve`, {
+      method: 'POST',
+      body: JSON.stringify({ approved_text: approvedText }),
+    })
+  }
   if (USE_MOCKS) {
     return {
       ...dispatchResult,
@@ -99,7 +114,33 @@ export async function approveDispatch(dispatchId, approvedText) {
   })
 }
 
+export async function previewDispatchAudio(dispatchId, approvedText) {
+  if (USE_REAL_APPROVALS) {
+    return request(`/api/dispatches/${dispatchId}/preview-audio`, {
+      method: 'POST',
+      body: JSON.stringify({ approved_text: approvedText }),
+    })
+  }
+  if (USE_MOCKS) {
+    return {
+      ...dispatchResult,
+      dispatch_id: dispatchId,
+      approved_text: approvedText,
+      approval_status: 'PENDING',
+      audio_status: 'AVAILABLE',
+      audio_url: '/audio/mock-preview.mp3',
+      audio_preview_text: approvedText,
+      solana_status: 'NOT_SUBMITTED',
+    }
+  }
+  return request(`/api/dispatches/${dispatchId}/preview-audio`, {
+    method: 'POST',
+    body: JSON.stringify({ approved_text: approvedText }),
+  })
+}
+
 export async function rejectDispatch(dispatchId) {
+  if (USE_REAL_APPROVALS) return request(`/api/dispatches/${dispatchId}/reject`, { method: 'POST' })
   if (USE_MOCKS) {
     return { ...structuredClone(dispatchResult), dispatch_id: dispatchId, approval_status: 'REJECTED' }
   }
