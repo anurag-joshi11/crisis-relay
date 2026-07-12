@@ -37,7 +37,7 @@ export default function CommandIntelligence({ blindspot, timeline, dispatch, dec
                   ? `The operator cancelled the resource update request. No broadcast was sent. ${blindspot.resource_id} remains unverified.`
                   : blindspot.reason}
             </p>
-          ) : <p>Select an issue to inspect latest confirmed state and missing confirmation.</p>}
+          ) : <p>Field reports have not produced a selectable active issue yet. Advance the scenario, then choose an issue from the left rail.</p>}
         </div>
 
         <div className={`action-box ${decision ? `decision-${decision.status.toLowerCase()}` : ''}`}>
@@ -57,7 +57,7 @@ export default function CommandIntelligence({ blindspot, timeline, dispatch, dec
                 <div className="audio-review">
                   <div>
                     <strong>Generated voice message</strong>
-                    <span>Listen before treating this broadcast as demo-ready.</span>
+                    <span>Listen before treating this message as broadcast-ready.</span>
                   </div>
                   <audio controls src={audioUrl}>
                     Your browser does not support audio playback.
@@ -75,7 +75,7 @@ export default function CommandIntelligence({ blindspot, timeline, dispatch, dec
             </>
           ) : (
             <>
-              <p>Ask the resource for current status before assuming arrival or completion.</p>
+              <p>{blindspot ? 'Ask the resource for current status before assuming arrival or completion.' : 'A resource update can be requested once an active issue is selected.'}</p>
               <button onClick={onDraft} disabled={!blindspot}>REQUEST RESOURCE UPDATE</button>
             </>
           )}

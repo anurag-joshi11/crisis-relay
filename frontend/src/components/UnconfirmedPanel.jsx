@@ -13,15 +13,22 @@ export default function UnconfirmedPanel({ blindspots = [], selectedBlindspot, d
         <span className="alert-count">{openCount} open</span>
       </div>
       <div className="stack">
-        {blindspots.map((blindspot) => (
-          <BlindspotCard
-            key={blindspot.blindspot_id}
-            blindspot={blindspot}
-            selected={selectedBlindspot?.blindspot_id === blindspot.blindspot_id}
-            decision={decisionsByBlindspot[blindspot.blindspot_id]?.[0]}
-            onSelect={onSelect}
-          />
-        ))}
+        {blindspots.length ? (
+          blindspots.map((blindspot) => (
+            <BlindspotCard
+              key={blindspot.blindspot_id}
+              blindspot={blindspot}
+              selected={selectedBlindspot?.blindspot_id === blindspot.blindspot_id}
+              decision={decisionsByBlindspot[blindspot.blindspot_id]?.[0]}
+              onSelect={onSelect}
+            />
+          ))
+        ) : (
+          <div className="empty-panel-note">
+            <strong>No active issue yet</strong>
+            <p>Keep advancing field reports until an operation stays unconfirmed long enough to need command attention.</p>
+          </div>
+        )}
       </div>
     </section>
   )

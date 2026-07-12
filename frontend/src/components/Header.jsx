@@ -13,7 +13,7 @@ export default function Header({ scenario, onReset, onNext, processing }) {
         <span className="incident-pill">Wildfire response</span>
         <span className="live-pill">LIVE</span>
         <span className="time-readout">{scenario.current_time}</span>
-        <button onClick={onReset}>RESET DEMO</button>
+        <button onClick={onReset}>RESET INCIDENT</button>
         <button onClick={onNext} disabled={processing}>NEXT FIELD REPORT</button>
       </div>
     </header>

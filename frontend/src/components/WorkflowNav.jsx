@@ -1,12 +1,12 @@
 export default function WorkflowNav({ activeView, onChange }) {
   const views = [
-    { id: 'overview', label: 'Demo Flow' },
+    { id: 'overview', label: 'Operational Flow' },
     { id: 'command', label: 'Command Center' },
-    { id: 'history', label: 'Decision History' },
+    { id: 'history', label: 'Audit Log' },
   ]
 
   return (
-    <nav className="workflow-nav" aria-label="Command workflow">
+    <nav className="workflow-nav" aria-label="Incident command navigation">
       {views.map((view) => (
         <button
           key={view.id}

@@ -2,32 +2,32 @@ const stageCopy = [
   {
     id: 'reports',
     label: '1',
-    title: 'Field reports arrive',
-    detail: 'Raw wildfire updates move through the scenario feed one report at a time.',
+    title: 'Field reports received',
+    detail: 'Incoming wildfire updates are added to the incident record as they arrive.',
   },
   {
     id: 'engine',
     label: '2',
-    title: 'Gemini and state engine interpret',
-    detail: 'Reports become state events, active needs, blockers, and unconfirmed operations.',
+    title: 'Operational state updated',
+    detail: 'Reports are converted into state events, active needs, blockers, and resource status.',
   },
   {
     id: 'issue',
     label: '3',
-    title: 'Command center flags risk',
-    detail: 'The operator sees what is unverified and why it matters operationally.',
+    title: 'Risk requiring action',
+    detail: 'Unconfirmed operations are elevated when the latest confirmed state is no longer enough.',
   },
   {
     id: 'approval',
     label: '4',
-    title: 'Voice preview is validated',
-    detail: 'The message is generated, listened to, and only then approved by a human.',
+    title: 'Voice message validated',
+    detail: 'Outbound status requests are previewed and approved by an operator before use.',
   },
   {
     id: 'audit',
     label: '5',
-    title: 'Decision is recorded',
-    detail: 'The dashboard shows the decision history and Solana receipt status.',
+    title: 'Decision recorded',
+    detail: 'Approved and cancelled actions are retained in the operational audit log.',
   },
 ]
 
@@ -61,11 +61,11 @@ export default function IncidentOverview({
   return (
     <main className="overview-page">
       <section className="panel overview-hero">
-        <span className="section-label">Demo flow</span>
+        <span className="section-label">Operational flow</span>
         <h2>{scenario.id} / {scenario.name}</h2>
         <p>
-          Show the wildfire workflow as one chain: incoming reports, extracted operational state,
-          unconfirmed risk, human-validated voice message, then audit history.
+          Live incident reports feed resource state, surface unconfirmed operational risk,
+          and route outbound status requests through human validation.
         </p>
         <div className="overview-metrics">
           <div>
@@ -86,8 +86,8 @@ export default function IncidentOverview({
       <section className="panel demo-runway">
         <div className="panel-title-row">
           <div>
-            <h2>End-to-end path</h2>
-            <p className="panel-subtitle">Use this as the judge-facing story before opening the live command view.</p>
+            <h2>Incident response path</h2>
+            <p className="panel-subtitle">Current status across report intake, resource state, command action, and audit.</p>
           </div>
           <button onClick={onOpenCommand}>Open Command Center</button>
         </div>

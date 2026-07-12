@@ -2,8 +2,8 @@ export default function DecisionHistoryPage({ scenario, decisions = [], onOpenCo
   return (
     <main className="history-page">
       <section className="panel history-hero">
-        <span className="section-label">Audit trail</span>
-        <h2>Decision History</h2>
+        <span className="section-label">Operational audit</span>
+        <h2>Audit Log</h2>
         <p>{scenario.id} / {scenario.name}</p>
       </section>
 
@@ -24,8 +24,8 @@ export default function DecisionHistoryPage({ scenario, decisions = [], onOpenCo
           </div>
         ) : (
           <div className="empty-history-page">
-            <h3>No decisions recorded yet</h3>
-            <p>Approve or cancel a resource update from the command center to populate this audit view.</p>
+            <h3>No actions recorded yet</h3>
+            <p>Approved and cancelled resource updates will appear here for operational review.</p>
             <button onClick={onOpenCommand}>Open Command Center</button>
           </div>
         )}

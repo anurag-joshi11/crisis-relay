@@ -1,5 +1,18 @@
 export default function EvidenceTimeline({ timeline }) {
-  if (!timeline) return null
+  if (!timeline) {
+    return (
+      <section className="timeline timeline-empty">
+        <div className="timeline-heading">
+          <span className="section-label">Evidence timeline</span>
+          <h3>Waiting for an active issue</h3>
+        </div>
+        <div className="empty-panel-note timeline-empty-note">
+          <strong>No evidence chain selected yet</strong>
+          <p>Evidence appears after an active issue is selected from current incident operations.</p>
+        </div>
+      </section>
+    )
+  }
 
   const missingLabel = timeline.missing_confirmation === 'ARRIVAL_OR_FULFILMENT'
     ? 'Missing confirmation'
