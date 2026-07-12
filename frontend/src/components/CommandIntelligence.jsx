@@ -16,6 +16,7 @@ export default function CommandIntelligence({ blindspot, timeline, dispatch, dec
     : blindspot?.severity === 'HIGH'
       ? 'High Priority Decision'
       : 'Priority Decision'
+  const followUpLabel = isApproved ? 'REQUEST UPDATED CHECK-IN' : isRejected ? 'CREATE NEW REQUEST' : 'REQUEST UPDATE'
 
   return (
     <section className="panel command">
@@ -58,7 +59,6 @@ export default function CommandIntelligence({ blindspot, timeline, dispatch, dec
               <p>Resource update request was approved. Awaiting field confirmation from the resource.</p>
               <div className="decision-meta">
                 <span>Solana: {dispatch?.solana_status || 'PENDING_SYNC'}</span>
-                {dispatch?.solana_signature ? <span>Signature: {dispatch.solana_signature}</span> : null}
                 {dispatch?.solana_error ? <span>Solana error: {dispatch.solana_error}</span> : null}
                 <span>Audio: {dispatch?.audio_status || (dispatch?.audio_url ? 'AVAILABLE' : 'UNAVAILABLE')}</span>
                 {dispatch?.audio_error ? <span>Audio error: {dispatch.audio_error}</span> : null}
@@ -67,26 +67,25 @@ export default function CommandIntelligence({ blindspot, timeline, dispatch, dec
                 <div className="audio-review">
                   <div>
                     <strong>Generated voice message</strong>
-                    <span>Listen before treating this message as broadcast-ready.</span>
+                    <span>Listen before treating this message as broadcast-ready. If the issue remains open, generate a fresh follow-up request.</span>
                   </div>
                   <audio controls src={audioUrl}>
                     Your browser does not support audio playback.
                   </audio>
-                  <a href={audioUrl} target="_blank" rel="noreferrer">Open MP3</a>
                 </div>
               ) : null}
-              <button onClick={onDraft} disabled={!blindspot}>SEND FOLLOW-UP</button>
+              <button onClick={onDraft} disabled={!blindspot}>{followUpLabel}</button>
             </>
           ) : isRejected ? (
             <>
               <strong className="decision-title">Rejected</strong>
               <p>Request cancelled. Nothing was broadcast.</p>
-              <button onClick={onDraft} disabled={!blindspot}>NEW REQUEST</button>
+              <button onClick={onDraft} disabled={!blindspot}>{followUpLabel}</button>
             </>
           ) : (
             <>
               <p>{blindspot ? 'Ask the resource for current status before assuming arrival or completion.' : 'A resource update can be requested once an active issue is selected.'}</p>
-              <button onClick={onDraft} disabled={!blindspot}>REQUEST UPDATE</button>
+              <button onClick={onDraft} disabled={!blindspot}>{followUpLabel}</button>
             </>
           )}
         </div>

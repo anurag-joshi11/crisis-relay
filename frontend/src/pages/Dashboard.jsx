@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { approveDispatch, draftStatusRequest, getDashboard, nextEvent, previewDispatchAudio, rejectDispatch, resetDemo } from '../api'
+import { approveDispatch, draftStatusRequest, getDashboard, getOperationTimeline, nextEvent, previewDispatchAudio, rejectDispatch, resetDemo } from '../api'
 import Header from '../components/Header'
 import ReportFeed from '../components/ReportFeed'
 import OperationPanel from '../components/OperationPanel'
@@ -14,7 +14,7 @@ import DecisionHistoryPage from '../components/DecisionHistoryPage'
 export default function Dashboard() {
   const [snapshot, setSnapshot] = useState(null)
   const [selectedBlindspot, setSelectedBlindspot] = useState(null)
-  const [dispatchDraft, setDispatchDraft] = useState(null)
+  const [dispatchesByBlindspot, setDispatchesByBlindspot] = useState({})
   const [approvalText, setApprovalText] = useState('')
   const [error, setError] = useState('')
   const [processing, setProcessing] = useState(false)
@@ -31,6 +31,16 @@ export default function Dashboard() {
     }).catch((e) => setError(e.message))
   }, [])
 
+  useEffect(() => {
+    if (!selectedBlindspot?.operation_id) {
+      setTimeline(snapshot?.selected_timeline || null)
+      return
+    }
+    getOperationTimeline(selectedBlindspot.operation_id)
+      .then((data) => setTimeline(data))
+      .catch((e) => setError(e.message))
+  }, [selectedBlindspot?.operation_id, snapshot?.demo?.event_index])
+
   async function handleReset() {
     setProcessing(true)
     try {
@@ -38,8 +48,9 @@ export default function Dashboard() {
       setSnapshot(data)
       setSelectedBlindspot(data.blindspots?.[0] || null)
       setTimeline(data.selected_timeline || null)
-      setDispatchDraft(null)
+      setDispatchesByBlindspot({})
       setApprovalOpen(false)
+      setApprovalText('')
       setDecisionsByBlindspot({})
     } finally {
       setProcessing(false)
@@ -51,7 +62,6 @@ export default function Dashboard() {
     try {
       const data = await nextEvent()
       setSnapshot(data)
-      setTimeline(data.selected_timeline || null)
       setSelectedBlindspot((current) => (
         data.blindspots?.find((blindspot) => blindspot.blindspot_id === current?.blindspot_id)
         || data.blindspots?.[0]
@@ -67,7 +77,10 @@ export default function Dashboard() {
     try {
       setError('')
       const data = await draftStatusRequest(selectedBlindspot.blindspot_id)
-      setDispatchDraft(data)
+      setDispatchesByBlindspot((current) => ({
+        ...current,
+        [selectedBlindspot.blindspot_id]: data,
+      }))
       setApprovalText(data.ai_draft || '')
       setApprovalOpen(true)
     } catch (e) {
@@ -76,11 +89,14 @@ export default function Dashboard() {
   }
 
   async function handleApprove() {
-    if (!dispatchDraft) return
+    if (!currentDispatch) return
     try {
       setError('')
-      const data = await approveDispatch(dispatchDraft.dispatch_id, approvalText)
-      setDispatchDraft(data)
+      const data = await approveDispatch(currentDispatch.dispatch_id, approvalText)
+      setDispatchesByBlindspot((current) => ({
+        ...current,
+        [selectedBlindspot.blindspot_id]: data,
+      }))
       recordDecision('APPROVED', 'Resource update requested. Awaiting field confirmation.')
       setApprovalOpen(false)
     } catch (e) {
@@ -89,22 +105,28 @@ export default function Dashboard() {
   }
 
   async function handlePreviewAudio() {
-    if (!dispatchDraft) return
+    if (!currentDispatch) return
     try {
       setError('')
-      const data = await previewDispatchAudio(dispatchDraft.dispatch_id, approvalText)
-      setDispatchDraft(data)
+      const data = await previewDispatchAudio(currentDispatch.dispatch_id, approvalText)
+      setDispatchesByBlindspot((current) => ({
+        ...current,
+        [selectedBlindspot.blindspot_id]: data,
+      }))
     } catch (e) {
       setError(e.message)
     }
   }
 
   async function handleReject() {
-    if (!dispatchDraft) return
+    if (!currentDispatch) return
     try {
       setError('')
-      const data = await rejectDispatch(dispatchDraft.dispatch_id)
-      setDispatchDraft(data)
+      const data = await rejectDispatch(currentDispatch.dispatch_id)
+      setDispatchesByBlindspot((current) => ({
+        ...current,
+        [selectedBlindspot.blindspot_id]: data,
+      }))
       recordDecision('REJECTED', 'Request cancelled. Nothing was broadcast.')
       setApprovalOpen(false)
     } catch (e) {
@@ -130,6 +152,7 @@ export default function Dashboard() {
 
   if (!snapshot) return <div className="shell">Loading...</div>
 
+  const currentDispatch = selectedBlindspot ? dispatchesByBlindspot[selectedBlindspot.blindspot_id] || null : null
   const currentDecisions = selectedBlindspot ? decisionsByBlindspot[selectedBlindspot.blindspot_id] || [] : []
   const allDecisions = Object.values(decisionsByBlindspot).flat()
   const openIssueCount = snapshot.blindspots.filter((blindspot) => !decisionsByBlindspot[blindspot.blindspot_id]?.length).length
@@ -147,7 +170,7 @@ export default function Dashboard() {
           reportCount={snapshot.reports.length}
           eventIndex={snapshot.demo?.event_index}
           totalEvents={snapshot.demo?.total_events}
-          dispatch={dispatchDraft}
+          dispatch={currentDispatch}
           onOpenCommand={() => setActiveView('command')}
         />
       ) : null}
@@ -168,7 +191,7 @@ export default function Dashboard() {
             <CommandIntelligence
               blindspot={selectedBlindspot}
               timeline={timeline}
-              dispatch={dispatchDraft}
+              dispatch={currentDispatch}
               decision={currentDecisions[0]}
               onDraft={handleDraft}
             />
@@ -182,11 +205,11 @@ export default function Dashboard() {
           onOpenCommand={() => setActiveView('command')}
         />
       ) : null}
-      {dispatchDraft ? <AudioPlayer audioUrl={dispatchDraft.audio_url} /> : null}
-      {dispatchDraft && approvalOpen ? (
+      {currentDispatch ? <AudioPlayer audioUrl={currentDispatch.audio_url} /> : null}
+      {currentDispatch && approvalOpen ? (
         <>
           <ApprovalModal
-            dispatch={dispatchDraft}
+            dispatch={currentDispatch}
             text={approvalText}
             setText={setApprovalText}
             onReject={handleReject}
