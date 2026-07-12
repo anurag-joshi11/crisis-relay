@@ -69,12 +69,14 @@ State guidance:
 - Canonicalize report-mentioned entities to stable UPPER_SNAKE_CASE IDs: "Engine 6" -> ENGINE_6, "Rescue Four" -> RESCUE_TEAM_4, "generator truck" -> GENERATOR_TRUCK, "supply truck five" -> SUPPLY_TRUCK_5, "Team Bravo" -> TEAM_BRAVO, "Boat two" -> BOAT_2.
 - Canonicalize task/outcome entities similarly: "water drop" -> WATER_DROP, "Sector 3 evacuation" -> SECTOR_3_EVACUATION, "road clearance" -> ROAD_CLEARANCE, "Building C search" -> BUILDING_C_SEARCH, "patient transfer" -> PATIENT_TRANSFER, "fire line" -> FIRE_LINE, "decontamination" -> DECONTAMINATION, and "resource request" -> RESOURCE_REQUEST.
 - When a task or outcome is explicitly stated but no responsible resource is named in the same report, use the canonical task/outcome entity_id instead of substituting a scenario_context resource_id.
+- Explicit task/outcome completion or verification is enough for a state_event on that task/outcome entity_id; do not downgrade it to an assumption or unresolved claim merely because no resource is named.
 - When an operation completion is reported and a responsible resource is explicitly identifiable in the same report, use the resource_id as state_event.entity_id and put the operation id in state_event.operation_id.
 - Do not use an operation id as state_event.entity_id when the mapped resource_id is known.
 
 Blocker guidance:
 - When a report states why an entity cannot proceed, enter, arrive, or complete, emit a blocker.
 - If the blocker subject is named in the report, blocker.entity_id must use that subject's canonical entity_id, even when it is not listed in scenario_context.
+- If a report says an entity is stopped, stuck, unable to proceed, or cannot continue because of a blocker cause, emit the blocked/failed state_event as well as the blocker.
 - blocker.type must describe the cause category, not the lifecycle state. Do not use BLOCKED as blocker.type when the cause is known.
 - Use VISIBILITY for smoke, zero visibility, visibility, or unable to enter because of smoke.
 - Use DEBRIS for debris, CLOSED_BRIDGE for closed bridges, CHEMICAL_EXPOSURE for chemical exposure risk, POLICE_CLEARANCE for police clearance, ROAD_COLLAPSE for collapsed access roads, FLOODWATER for floodwater, STRUCTURAL_INSTABILITY for structural instability, and MECHANICAL_FAILURE for propulsion or vehicle failure.

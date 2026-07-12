@@ -298,6 +298,22 @@ class GeminiExtractionTests(unittest.TestCase):
         self.assertIn('"water drop" -> WATER_DROP', prompt)
         self.assertIn("no responsible resource is named in the same report", prompt)
         self.assertIn("use the canonical task/outcome entity_id", prompt)
+        self.assertIn("Explicit task/outcome completion or verification is enough", prompt)
+        self.assertIn("do not downgrade it to an assumption or unresolved claim", prompt)
+
+    def test_prompt_emits_state_event_for_named_blocked_entity(self) -> None:
+        client = FakeGeminiClient(extraction_payload())
+        service = GeminiIntelligenceService(client=client, model="test-model")
+        service.extract_report(
+            ExtractRequest(
+                raw_text="Generator truck stopped; bridge is closed.",
+                scenario_context=default_context(),
+            )
+        )
+
+        prompt = client.models.calls[0]["contents"]
+        self.assertIn("blocker.entity_id must use that subject's canonical entity_id", prompt)
+        self.assertIn("emit the blocked/failed state_event as well as the blocker", prompt)
 
     def test_prompt_preserves_unlinked_outcomes_as_unresolved_claims(self) -> None:
         client = FakeGeminiClient(extraction_payload())
