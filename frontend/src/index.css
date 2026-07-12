@@ -609,8 +609,7 @@ h1, h2, h3, p { margin-top: 0; }
 }
 
 .selected {
-  outline: 1px solid #ef4444;
-  outline-offset: 1px;
+  outline: none;
 }
 
 .blindspot-card {
@@ -621,8 +620,34 @@ h1, h2, h3, p { margin-top: 0; }
 }
 
 .blindspot-card:hover:not(:disabled) {
+  background: linear-gradient(90deg, rgba(30, 41, 59, 0.92), rgba(15, 23, 42, 0.94));
+  border-color: rgba(148, 163, 184, 0.3);
+}
+
+.blindspot-card.severity-critical:hover:not(:disabled) {
   background: linear-gradient(90deg, rgba(127, 29, 29, 0.34), rgba(15, 23, 42, 0.92));
   border-color: rgba(239, 68, 68, 0.52);
+}
+
+.blindspot-card.severity-high:hover:not(:disabled) {
+  background: linear-gradient(90deg, rgba(120, 53, 15, 0.28), rgba(15, 23, 42, 0.92));
+  border-color: rgba(245, 158, 11, 0.4);
+}
+
+.blindspot-card.selected.severity-critical {
+  box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.62), inset 0 0 0 1px rgba(248, 113, 113, 0.22);
+}
+
+.blindspot-card.selected.severity-high {
+  box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.58), inset 0 0 0 1px rgba(252, 211, 77, 0.18);
+}
+
+.blindspot-card.selected.decision-approved {
+  box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.56), inset 0 0 0 1px rgba(134, 239, 172, 0.16);
+}
+
+.blindspot-card.selected.decision-rejected {
+  box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.56), inset 0 0 0 1px rgba(252, 165, 165, 0.16);
 }
 
 .blindspot-card.decision-approved {
@@ -719,6 +744,18 @@ h1, h2, h3, p { margin-top: 0; }
   border-left: 3px solid #ef4444;
 }
 
+.assessment-box.severity-critical {
+  background: linear-gradient(180deg, rgba(127, 29, 29, 0.24), rgba(8, 13, 26, 0.92));
+  border-color: rgba(239, 68, 68, 0.34);
+  border-left-color: #ef4444;
+}
+
+.assessment-box.severity-high {
+  background: linear-gradient(180deg, rgba(120, 53, 15, 0.2), rgba(8, 13, 26, 0.92));
+  border-color: rgba(245, 158, 11, 0.3);
+  border-left-color: #f59e0b;
+}
+
 .assessment-box.decision-approved {
   background: linear-gradient(180deg, rgba(20, 83, 45, 0.26), rgba(8, 13, 26, 0.92));
   border-color: rgba(34, 197, 94, 0.36);
@@ -747,6 +784,14 @@ h1, h2, h3, p { margin-top: 0; }
   color: #fca5a5;
 }
 
+.action-headline.severity-critical {
+  color: #fb7185;
+}
+
+.action-headline.severity-high {
+  color: #fbbf24;
+}
+
 .assessment-text {
   color: #f8fafc;
   font-size: 0.98rem;
@@ -772,6 +817,16 @@ h1, h2, h3, p { margin-top: 0; }
 .action-box.decision-rejected {
   background: linear-gradient(180deg, rgba(127, 29, 29, 0.3), rgba(8, 13, 26, 0.92));
   border-color: rgba(239, 68, 68, 0.4);
+}
+
+.action-box.severity-critical {
+  background: linear-gradient(180deg, rgba(127, 29, 29, 0.16), rgba(8, 13, 26, 0.92));
+  border-color: rgba(239, 68, 68, 0.28);
+}
+
+.action-box.severity-high {
+  background: linear-gradient(180deg, rgba(120, 53, 15, 0.12), rgba(8, 13, 26, 0.92));
+  border-color: rgba(245, 158, 11, 0.24);
 }
 
 .action-box.decision-approved .decision-title,
@@ -975,6 +1030,26 @@ h1, h2, h3, p { margin-top: 0; }
   background: rgba(239, 68, 68, 0.10);
   border-color: rgba(239, 68, 68, 0.32);
   border-left: 3px solid #ef4444;
+}
+
+.assumption-node {
+  background: rgba(245, 158, 11, 0.09);
+  border-color: rgba(245, 158, 11, 0.28);
+  border-left: 3px solid #f59e0b;
+}
+
+.assumption-node strong {
+  color: #fde68a;
+}
+
+.claim-node {
+  background: rgba(59, 130, 246, 0.09);
+  border-color: rgba(96, 165, 250, 0.24);
+  border-left: 3px solid #60a5fa;
+}
+
+.claim-node strong {
+  color: #bfdbfe;
 }
 
 .dispatch-result {

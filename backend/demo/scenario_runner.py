@@ -72,16 +72,47 @@ def _selected_timeline(store, operation_id: str | None) -> dict:
     if not operation_id:
         return {"operation_id": None, "events": [], "missing_confirmation": None, "related_active_need": None}
     operation = store.get_operation(operation_id)
-    events = [
-        {"scenario_time": event["scenario_time"], "new_state": event["new_state"], "evidence": event["evidence"]}
-        for event in store.list_state_events(operation_id)
-    ]
+    events = _timeline_events(store, operation)
+    missing_confirmation = _missing_confirmation(operation)
+    if missing_confirmation:
+        events.append(
+            {
+                "kind": "missing_confirmation",
+                "scenario_time": None,
+                "title": _missing_title(missing_confirmation),
+                "evidence": _missing_evidence(missing_confirmation),
+            }
+        )
     return {
         "operation_id": operation_id,
         "events": events,
-        "missing_confirmation": _missing_confirmation(operation),
+        "missing_confirmation": missing_confirmation,
         "related_active_need": _related_active_need(store, operation_id),
     }
+
+
+def _timeline_events(store, operation: dict | None) -> list[dict]:
+    if not operation:
+        return []
+
+    operation_id = operation["operation_id"]
+    resource_id = operation.get("resource_id")
+    events = [
+        {
+            "kind": "confirmed_state",
+            "scenario_time": event["scenario_time"],
+            "title": event["new_state"],
+            "evidence": event["evidence"],
+        }
+        for event in store.list_state_events(operation_id)
+    ]
+
+    for report in store.list_reports():
+        supplemental = _supplemental_timeline_event(report, operation_id, resource_id)
+        if supplemental:
+            events.append(supplemental)
+
+    return events
 
 
 def _missing_confirmation(operation: dict | None) -> str | None:
@@ -93,6 +124,72 @@ def _missing_confirmation(operation: dict | None) -> str | None:
     if state in {"ARRIVED", "HOLDING"}:
         return "FULFILMENT"
     return "STATE_PROGRESS"
+
+
+def _missing_title(missing_confirmation: str) -> str:
+    if missing_confirmation == "ARRIVAL_OR_FULFILMENT":
+        return "MISSING CONFIRMATION"
+    if missing_confirmation == "FULFILMENT":
+        return "FULFILMENT PENDING"
+    return "STATE UPDATE PENDING"
+
+
+def _missing_evidence(missing_confirmation: str) -> str:
+    if missing_confirmation == "ARRIVAL_OR_FULFILMENT":
+        return "No arrival or fulfilment confirmation has been received."
+    if missing_confirmation == "FULFILMENT":
+        return "Arrival is confirmed, but fulfilment has not been confirmed yet."
+    return "A newer confirmed operational state has not been received."
+
+
+def _supplemental_timeline_event(report: dict, operation_id: str, resource_id: str | None) -> dict | None:
+    ground_truth = report.get("ground_truth") or {}
+
+    assumption = ground_truth.get("assumption") or {}
+    if resource_id and assumption.get("entity_id") == resource_id:
+        assumed_state = assumption.get("assumed_state") or "STATE"
+        return {
+            "kind": "assumption",
+            "scenario_time": report["scenario_time"],
+            "title": f"UNCERTAIN {assumed_state}",
+            "evidence": report["raw_text"],
+        }
+
+    claim = ground_truth.get("claim") or {}
+    if resource_id and claim.get("subject") == resource_id:
+        return {
+            "kind": "claim",
+            "scenario_time": report["scenario_time"],
+            "title": _claim_title(claim),
+            "evidence": report["raw_text"],
+        }
+
+    if ground_truth.get("related_operation") == operation_id and ground_truth.get("need_still_active"):
+        title = "ACTIVE NEED REPEATED"
+        if ground_truth.get("fulfillment") == "UNRESOLVED":
+            title = "FULFILMENT UNRESOLVED"
+        return {
+            "kind": "active_need",
+            "scenario_time": report["scenario_time"],
+            "title": title,
+            "evidence": report["raw_text"],
+        }
+
+    return None
+
+
+def _claim_title(claim: dict) -> str:
+    attribute = claim.get("attribute")
+    value = claim.get("value")
+    if attribute == "VISUAL_CONTACT" and value == "NOT_OBSERVED":
+        return "NO VISUAL CONTACT"
+    if attribute == "ARRIVAL_AT_SHELTER_ALPHA" and value == "NOT_OBSERVED":
+        return "ARRIVAL NOT OBSERVED"
+    if attribute == "COMMUNICATION" and value == "NO_CONTACT":
+        return "NO RADIO CONTACT"
+    if attribute and value:
+        return f"{attribute.replace('_', ' ')}: {value.replace('_', ' ')}"
+    return "FIELD CLAIM"
 
 
 def _related_active_need(store, operation_id: str) -> dict | None:

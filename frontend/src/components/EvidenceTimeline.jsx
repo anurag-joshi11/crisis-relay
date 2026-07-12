@@ -14,10 +14,6 @@ export default function EvidenceTimeline({ timeline }) {
     )
   }
 
-  const missingLabel = timeline.missing_confirmation === 'ARRIVAL_OR_FULFILMENT'
-    ? 'Missing confirmation'
-    : timeline.missing_confirmation
-
   return (
     <section className="timeline">
       <div className="timeline-heading">
@@ -25,33 +21,26 @@ export default function EvidenceTimeline({ timeline }) {
         <h3>{timeline.operation_id}</h3>
       </div>
       <div className="timeline-track">
-        {timeline.events.map((event) => (
-          <div key={`${event.scenario_time}-${event.new_state}`} className="timeline-node confirmed-node">
+        {timeline.events.map((event, index) => (
+          <div
+            key={`${event.scenario_time || 'pending'}-${event.title}-${index}`}
+            className={`timeline-node ${event.kind === 'missing_confirmation'
+              ? 'missing-node'
+              : event.kind === 'active_need'
+                ? 'active-need-node'
+                : event.kind === 'assumption'
+                  ? 'assumption-node'
+                  : event.kind === 'claim'
+                    ? 'claim-node'
+                    : 'confirmed-node'}`}
+          >
             <div className="timeline-stamp">
-              <span className="timeline-time">{event.scenario_time}</span>
-              <strong>{event.new_state}</strong>
+              {event.scenario_time ? <span className="timeline-time">{event.scenario_time}</span> : <span className="missing-mark">?</span>}
+              <strong>{event.title}</strong>
             </div>
             <p>{event.evidence}</p>
           </div>
         ))}
-        {timeline.missing_confirmation ? (
-          <div className="timeline-node missing-node">
-            <div className="timeline-stamp">
-              <span className="missing-mark">?</span>
-              <strong>{missingLabel}</strong>
-            </div>
-            <p>No arrival or fulfilment confirmation has been received.</p>
-          </div>
-        ) : null}
-        {timeline.related_active_need ? (
-          <div className="timeline-node active-need-node">
-            <div className="timeline-stamp">
-              <span className="timeline-time">{timeline.related_active_need.scenario_time}</span>
-              <strong>Active need repeated</strong>
-            </div>
-            <p>{timeline.related_active_need.evidence}</p>
-          </div>
-        ) : null}
       </div>
     </section>
   )

@@ -3,7 +3,7 @@ import dispatchResult from './mocks/dispatch_result.json'
 import { MOCK_AUDIO_DATA_URI } from './audioUrl'
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000'
-const USE_MOCKS = (import.meta.env.VITE_USE_MOCKS || 'true') === 'true'
+const USE_MOCKS = (import.meta.env.VITE_USE_MOCKS || 'false') === 'true'
 const USE_REAL_APPROVALS = (import.meta.env.VITE_REAL_APPROVALS || 'false') === 'true'
 let mockSnapshot = structuredClone(dashboardSnapshot)
 

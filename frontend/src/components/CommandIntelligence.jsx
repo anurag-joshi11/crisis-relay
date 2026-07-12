@@ -6,13 +6,22 @@ export default function CommandIntelligence({ blindspot, timeline, dispatch, dec
   const isRejected = decision?.status === 'REJECTED'
   const headerStatus = decision?.status || blindspot?.severity
   const audioUrl = resolveAudioUrl(dispatch?.audio_url)
-  const assessmentClass = decision ? `decision-${decision.status.toLowerCase()}` : ''
+  const toneClass = decision
+    ? `decision-${decision.status.toLowerCase()}`
+    : blindspot?.severity
+      ? `severity-${blindspot.severity.toLowerCase()}`
+      : ''
+  const commandTitle = blindspot?.severity === 'CRITICAL'
+    ? 'Critical Decision'
+    : blindspot?.severity === 'HIGH'
+      ? 'High Priority Decision'
+      : 'Priority Decision'
 
   return (
     <section className="panel command">
       <div className="command-header">
         <div>
-          <h2>Priority Decision</h2>
+          <h2>{commandTitle}</h2>
           <p className="muted">Review the selected issue and decide whether to request an update.</p>
         </div>
         {headerStatus ? (
@@ -23,10 +32,10 @@ export default function CommandIntelligence({ blindspot, timeline, dispatch, dec
       </div>
 
       <div className="command-grid">
-        <div className={`assessment-box ${assessmentClass}`}>
+        <div className={`assessment-box ${toneClass}`}>
           <span className="section-label">Assessment</span>
           {blindspot ? (
-            <div className={`action-headline ${assessmentClass}`}>
+            <div className={`action-headline ${toneClass}`}>
               {isApproved ? 'Update approved' : isRejected ? 'Update rejected' : `${blindspot.resource_id} needs status check`}
             </div>
           ) : null}
@@ -41,7 +50,7 @@ export default function CommandIntelligence({ blindspot, timeline, dispatch, dec
           ) : <p>Field reports have not produced a selectable active issue yet. Advance the scenario, then choose an issue from the left rail.</p>}
         </div>
 
-        <div className={`action-box ${decision ? `decision-${decision.status.toLowerCase()}` : ''}`}>
+        <div className={`action-box ${toneClass}`}>
           <span className="section-label">{decision ? 'Decision recorded' : 'Decision'}</span>
           {isApproved ? (
             <>

@@ -6,7 +6,9 @@ from fastapi import APIRouter, Body, Depends, HTTPException
 
 from backend.api.deps import get_runner
 from backend.config import CONTRACTS_DIR
+from backend.schemas.gemini_schema import DraftStatusRequest
 from backend.services.elevenlabs_service import synthesize_approved_text
+from backend.services.gemini_service import GeminiIntelligenceService
 from backend.services.solana_service import build_payload, submit_receipt
 from backend.utils import load_json, utc_now
 
@@ -37,17 +39,32 @@ def _operation_for(runner, operation_id: str) -> dict:
     return operation
 
 
+def _missing_confirmation_for(operation: dict) -> str:
+    state = operation.get("current_state")
+    if state == "DISPATCHED":
+        return "ARRIVAL_OR_FULFILMENT"
+    if state in {"ARRIVED", "HOLDING"}:
+        return "FULFILMENT"
+    return "STATE_PROGRESS"
+
+
 @router.post("/blindspots/{blindspot_id}/draft-status-request")
 def draft_status_request(blindspot_id: str, runner=Depends(get_runner)) -> dict:
     global _dispatch_counter
     blindspot = _blindspot_for(runner, blindspot_id)
+    operation = _operation_for(runner, blindspot["operation_id"])
 
     existing = next((item for item in _dispatches.values() if item["blindspot_id"] == blindspot_id), None)
     if existing and existing["approval_status"] == "PENDING":
-        return existing
-
-    dispatch = deepcopy(_dispatches["DSP-001"])
-    if existing:
+        dispatch = deepcopy(existing)
+        dispatch["approved_text"] = None
+        dispatch["audio_url"] = None
+        dispatch["audio_status"] = "NOT_GENERATED"
+        dispatch["audio_error"] = None
+        dispatch["audio_preview_text"] = None
+    else:
+        dispatch = deepcopy(_dispatches["DSP-001"])
+    if existing and existing["approval_status"] != "PENDING":
         _dispatch_counter += 1
         dispatch["dispatch_id"] = f"DSP-{_dispatch_counter:03d}"
         dispatch["approval_id"] = None
@@ -64,6 +81,19 @@ def draft_status_request(blindspot_id: str, runner=Depends(get_runner)) -> dict:
     dispatch["blindspot_id"] = blindspot_id
     dispatch["operation_id"] = blindspot["operation_id"]
     dispatch["approval_status"] = "PENDING"
+    draft_service = GeminiIntelligenceService()
+    draft = draft_service.draft_status(
+        DraftStatusRequest(
+            resource_id=operation["resource_id"],
+            operation_id=operation["operation_id"],
+            current_state=operation.get("current_state"),
+            missing_confirmation=_missing_confirmation_for(operation),
+            active_need=blindspot["reason"] if operation.get("need_still_active") else None,
+            location=operation.get("location"),
+        )
+    )
+    dispatch["ai_draft"] = draft.draft
+    dispatch["draft_source"] = draft.draft_source
     _dispatches[dispatch["dispatch_id"]] = dispatch
     return dispatch
 

@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 import json
+import os
 import unittest
 from pathlib import Path
 from types import SimpleNamespace
+from unittest.mock import patch
 
 from pydantic import ValidationError
 
@@ -462,17 +464,18 @@ class GeminiExtractionTests(unittest.TestCase):
 
 class DraftStatusTests(unittest.TestCase):
     def test_fallback_draft_is_under_25_words_and_labeled(self) -> None:
-        service = GeminiIntelligenceService(client=None, model="test-model", load_env=False)
-        result = service.draft_status(
-            DraftStatusRequest(
-                resource_id="TANKER_2",
-                operation_id="OP-WATER-001",
-                current_state="DISPATCHED",
-                missing_confirmation="ARRIVED",
-                active_need="water drop",
-                location="SECTOR_4",
+        with patch.dict(os.environ, {"GEMINI_API_KEY": ""}):
+            service = GeminiIntelligenceService(client=None, model="test-model", load_env=False)
+            result = service.draft_status(
+                DraftStatusRequest(
+                    resource_id="TANKER_2",
+                    operation_id="OP-WATER-001",
+                    current_state="DISPATCHED",
+                    missing_confirmation="ARRIVED",
+                    active_need="water drop",
+                    location="SECTOR_4",
+                )
             )
-        )
         self.assertLessEqual(len(result.draft.split()), 25)
         self.assertEqual(result.draft_source, "FALLBACK_TEMPLATE")
         self.assertNotIn("dispatch", result.draft.lower())
