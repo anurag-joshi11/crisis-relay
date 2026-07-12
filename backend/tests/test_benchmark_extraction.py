@@ -238,12 +238,43 @@ class BenchmarkScoringTests(unittest.TestCase):
                         "text": "water visible",
                         "entity_id": None,
                         "operation_id": "OP-WATER-001",
-                        "unresolved": True,
+                        "unresolved": False,
                         "reason": "unlinked",
                     }
                 ]
             ),
         )
+
+    def test_unlinked_claim_does_not_require_operation_id(self) -> None:
+        benchmark_case = case(
+            category="UNLINKED_EVENT",
+            raw_text="Sector Four residents arriving at Alpha.",
+            expected={
+                "state_transition": None,
+                "must_not_transition_entity": "BUS_7",
+                "must_not_transition_to": "ARRIVED",
+                "expected_behavior": "PRESERVE_UNCERTAINTY",
+                "assumption_expected": False,
+                "unresolved_link_expected": True,
+            },
+        )
+        scored = score_case(
+            benchmark_case,
+            result(
+                claims=[
+                    {
+                        "text": "Sector Four residents arriving at Alpha.",
+                        "entity_id": None,
+                        "operation_id": None,
+                        "unresolved": True,
+                        "reason": "unlinked outcome",
+                    }
+                ]
+            ),
+            self.context,
+        )
+        self.assertTrue(scored["passed"], scored["field_details"])
+        self.assertNotIn("claims.operation_id", scored["expectations"]["scored_fields"])
 
     def test_expected_blocker_passes(self) -> None:
         benchmark_case = case(

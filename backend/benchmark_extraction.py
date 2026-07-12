@@ -96,14 +96,9 @@ def enrich_case_expectations(case: dict[str, Any], context: ScenarioContext) -> 
         enriched["scored_fields"].extend(["assumptions.entity_id", "assumptions.blocked_transition"])
 
     if expected.get("unresolved_link_expected"):
-        operation_id = claim_operation_for_case(case, context)
         claim: dict[str, Any] = {"unresolved": True}
-        if operation_id:
-            claim["operation_id"] = operation_id
         enriched["expected_claims"] = [claim]
         enriched["scored_fields"].append("claims.unresolved")
-        if operation_id:
-            enriched["scored_fields"].append("claims.operation_id")
 
     return enriched
 
@@ -128,17 +123,6 @@ def expected_blocker(case: dict[str, Any], entity_id: str, operation_id: str | N
             if operation_id:
                 blocker["operation_id"] = operation_id
             return blocker
-    return None
-
-
-def claim_operation_for_case(case: dict[str, Any], context: ScenarioContext) -> str | None:
-    text = case["raw_text"].lower()
-    if "sector four residents" in text:
-        return operation_for_entity(context, "BUS_7")
-    if "water visible" in text:
-        return operation_for_entity(context, "TANKER_2")
-    if "power is back at shelter alpha" in text:
-        return operation_for_entity(context, "GENERATOR_3")
     return None
 
 
