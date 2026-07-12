@@ -46,6 +46,11 @@ Safety rules:
 - Never infer COMPLETED from REQUESTED, ACKNOWLEDGED, ASSIGNED, or DISPATCHED.
 - ARRIVED, COMPLETED, and VERIFIED require explicit evidence in the source text.
 - Treat should, probably, likely, must have, I assume, and I think as assumptions.
+- When uncertainty, speculation, hearsay, ambiguity, or missing confirmation prevents applying a specific operational transition, emit an assumption instead of a state_event.
+- For that assumption, set entity_id to the affected entity when identifiable.
+- Set blocked_transition to the canonical state that would otherwise have been applied; prefer names from scenario_context.state_machine when available.
+- Do not leave blocked_transition null when the uncertain statement clearly references an identifiable transition such as ARRIVED, COMPLETED, VERIFIED, DISPATCHED, DEPLOYED, or HOLDING.
+- Preserve the uncertain statement in assumption.text and explain why it cannot advance state in assumption.reason.
 - Do not link outcomes to resources solely because the relationship is temporally plausible.
 - Preserve unlinked outcomes as claims, not state transitions.
 - Gemini interprets language only; it is not the final operational state authority.

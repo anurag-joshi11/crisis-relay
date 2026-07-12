@@ -208,6 +208,37 @@ class GeminiExtractionTests(unittest.TestCase):
         self.assertNotIn("ground_truth", prompt)
         self.assertIn("Never infer ARRIVED", prompt)
 
+    def test_prompt_requires_blocked_transition_for_uncertain_operational_transition(self) -> None:
+        client = FakeGeminiClient(extraction_payload())
+        service = GeminiIntelligenceService(client=client, model="test-model")
+        service.extract_report(
+            ExtractRequest(raw_text="Bus 7 may have arrived.", scenario_context=default_context())
+        )
+
+        prompt = client.models.calls[0]["contents"]
+        self.assertIn("Set blocked_transition to the canonical state", prompt)
+        self.assertIn("Do not leave blocked_transition null", prompt)
+        self.assertIn("scenario_context.state_machine", prompt)
+
+    def test_tc021_style_assumption_blocked_transition_survives_validation(self) -> None:
+        result = self.extract_with_payload(
+            "Bus seven should be there by now.",
+            extraction_payload(
+                assumptions=[
+                    {
+                        "text": "Bus seven should be there by now.",
+                        "entity_id": "BUS_7",
+                        "blocked_transition": "ARRIVED",
+                        "reason": "Should language describes an unconfirmed arrival.",
+                    }
+                ]
+            ),
+        )
+
+        self.assertEqual(result.state_events, [])
+        self.assertEqual(result.assumptions[0].entity_id, "BUS_7")
+        self.assertEqual(result.assumptions[0].blocked_transition, "ARRIVED")
+
     def test_generate_content_uses_response_json_schema_with_strict_schema(self) -> None:
         schema = ExtractionResult.model_json_schema()
         self.assertTrue(schema_contains_key(schema, "additionalProperties"))
