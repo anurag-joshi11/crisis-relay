@@ -1,6 +1,6 @@
 export default function WorkflowNav({ activeView, onChange }) {
   const views = [
-    { id: 'overview', label: 'Incident Overview' },
+    { id: 'overview', label: 'Demo Flow' },
     { id: 'command', label: 'Command Center' },
     { id: 'history', label: 'Decision History' },
   ]

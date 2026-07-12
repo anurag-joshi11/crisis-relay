@@ -1,12 +1,9 @@
+import { resolveAudioUrl } from '../audioUrl'
+
 export default function ApprovalModal({ dispatch, text, setText, onReject, onApprove, onPreviewAudio, onClose }) {
   if (!dispatch) return null
 
-  const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:8000'
-  const audioUrl = dispatch.audio_url
-    ? dispatch.audio_url.startsWith('http')
-      ? dispatch.audio_url
-      : `${apiBase}${dispatch.audio_url}`
-    : null
+  const audioUrl = resolveAudioUrl(dispatch.audio_url)
   const previewMatchesText = Boolean(audioUrl && dispatch.audio_preview_text === text)
   const canApprove = Boolean(text.trim() && previewMatchesText && dispatch.audio_status === 'AVAILABLE')
 

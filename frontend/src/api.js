@@ -1,5 +1,6 @@
 import dashboardSnapshot from './mocks/dashboard.json'
 import dispatchResult from './mocks/dispatch_result.json'
+import { MOCK_AUDIO_DATA_URI } from './audioUrl'
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 const USE_MOCKS = (import.meta.env.VITE_USE_MOCKS || 'true') === 'true'
@@ -128,7 +129,7 @@ export async function previewDispatchAudio(dispatchId, approvedText) {
       approved_text: approvedText,
       approval_status: 'PENDING',
       audio_status: 'AVAILABLE',
-      audio_url: '/audio/mock-preview.mp3',
+      audio_url: MOCK_AUDIO_DATA_URI,
       audio_preview_text: approvedText,
       solana_status: 'NOT_SUBMITTED',
     }

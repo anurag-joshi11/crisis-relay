@@ -4,9 +4,11 @@
 .venv/
 venv/
 node_modules/
+frontend/.vite/
 backend/generated_audio/
 frontend/dist/
 benchmark_results/
+*.log
 __pycache__/
 *.pyc
 *.py[cod]

@@ -51,6 +51,11 @@ class ScenarioRunner:
             "demo": state,
         }
 
+    def timeline_for_operation(self, operation_id: str) -> dict | None:
+        if not self.store.get_operation(operation_id):
+            return None
+        return _selected_timeline(self.store, operation_id)
+
 
 def _select_operation(store) -> str | None:
     blindspots = store.list_blindspots("OPEN")

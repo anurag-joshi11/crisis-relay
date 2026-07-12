@@ -21,13 +21,15 @@ export default function EvidenceTimeline({ timeline }) {
             <p>{event.evidence}</p>
           </div>
         ))}
-        <div className="timeline-node missing-node">
-          <div className="timeline-stamp">
-            <span className="missing-mark">?</span>
-            <strong>{missingLabel}</strong>
+        {timeline.missing_confirmation ? (
+          <div className="timeline-node missing-node">
+            <div className="timeline-stamp">
+              <span className="missing-mark">?</span>
+              <strong>{missingLabel}</strong>
+            </div>
+            <p>No arrival or fulfilment confirmation has been received.</p>
           </div>
-          <p>No arrival or fulfilment confirmation has been received.</p>
-        </div>
+        ) : null}
         {timeline.related_active_need ? (
           <div className="timeline-node active-need-node">
             <div className="timeline-stamp">

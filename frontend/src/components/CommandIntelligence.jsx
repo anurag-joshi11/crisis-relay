@@ -1,15 +1,11 @@
 import EvidenceTimeline from './EvidenceTimeline'
+import { resolveAudioUrl } from '../audioUrl'
 
 export default function CommandIntelligence({ blindspot, timeline, dispatch, decision, onDraft }) {
   const isApproved = decision?.status === 'APPROVED'
   const isRejected = decision?.status === 'REJECTED'
   const headerStatus = decision?.status || blindspot?.severity
-  const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:8000'
-  const audioUrl = dispatch?.audio_url
-    ? dispatch.audio_url.startsWith('http')
-      ? dispatch.audio_url
-      : `${apiBase}${dispatch.audio_url}`
-    : null
+  const audioUrl = resolveAudioUrl(dispatch?.audio_url)
 
   return (
     <section className="panel command">

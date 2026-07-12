@@ -5,7 +5,7 @@ import json
 import os
 import re
 import time
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Callable
 
@@ -282,7 +282,7 @@ def create_report(
     delay_seconds: float = 5.0,
     max_rate_limit_retries: int = 3,
 ) -> dict[str, Any]:
-    now = datetime.now(UTC).isoformat()
+    now = datetime.now(timezone.utc).isoformat()
     selected_ids = [case["test_id"] for case in cases]
     return {
         "benchmark_version": BENCHMARK_VERSION,
@@ -455,7 +455,7 @@ def update_summary(report: dict[str, Any]) -> None:
     passed = sum(1 for case in cases if case["passed"])
     failed = attempted - passed
     api_errors = sum(1 for case in cases if "error" in case)
-    report["updated_at_utc"] = datetime.now(UTC).isoformat()
+    report["updated_at_utc"] = datetime.now(timezone.utc).isoformat()
     report["summary"] = {
         "total_cases": report["total_cases"],
         "attempted_cases": attempted,
@@ -522,7 +522,7 @@ def select_cases(cases: list[dict[str, Any]], case_id: str | None, limit: int | 
 
 
 def report_path_for_new_run() -> Path:
-    stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
+    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     return RESULTS_DIR / f"extraction_benchmark_{stamp}.json"
 
 

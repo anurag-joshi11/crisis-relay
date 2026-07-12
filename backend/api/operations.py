@@ -20,6 +20,7 @@ def get_operation(operation_id: str, runner=Depends(get_runner)):
 
 @router.get("/{operation_id}/timeline")
 def get_timeline(operation_id: str, runner=Depends(get_runner)):
-    if not runner.store.get_operation(operation_id):
+    timeline = runner.timeline_for_operation(operation_id)
+    if not timeline:
         raise HTTPException(status_code=404, detail="operation not found")
-    return {"operation_id": operation_id, "events": runner.store.list_state_events(operation_id)}
+    return timeline

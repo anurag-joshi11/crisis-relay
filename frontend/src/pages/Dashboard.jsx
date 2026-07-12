@@ -147,6 +147,10 @@ export default function Dashboard() {
           scenario={snapshot.scenario}
           openIssues={openIssueCount}
           decisionsCount={allDecisions.length}
+          reportCount={snapshot.reports.length}
+          eventIndex={snapshot.demo?.event_index}
+          totalEvents={snapshot.demo?.total_events}
+          dispatch={dispatchDraft}
           onOpenCommand={() => setActiveView('command')}
         />
       ) : null}

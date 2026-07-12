@@ -77,12 +77,12 @@ npm run dev
 - Generate the voice preview first, then approve only after listening.
 - ElevenLabs should synthesize only `approved_text`.
 - Solana should store only compact identifiers and a SHA-256 hash.
-- If Solana is missing credentials or the devnet wallet is unfunded, return `PENDING_SYNC` with no fake signature.
+- If Solana is disabled, missing credentials, or fails, surface the exact status without a fake signature.
 - If ElevenLabs fails, keep the dispatch in preview mode and show the audio error.
 
 ## Deployment Notes
 
-- Backend source directory: `backend`
+- Backend source directory: repository root
 - Backend build command: `pip install -r requirements.txt`
 - Backend run command: `uvicorn backend.main:app --host 0.0.0.0 --port $PORT`
 - Frontend source directory: `frontend`
